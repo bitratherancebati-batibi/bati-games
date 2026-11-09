@@ -2786,5 +2786,321 @@ function batiSanteTerminer() {
     " question(s) au total. Continue à apprendre !";
 }
     </script>
-  </body>
+  
+<style>
+#bati-education {
+  background: #151525;
+  color: #fff;
+  padding: 25px 16px;
+  margin: 25px auto;
+  max-width: 850px;
+  border-radius: 18px;
+  border: 1px solid #b99538;
+  font-family: Arial, sans-serif;
+}
+#bati-education h2 {
+  color: #e4bd54;
+  text-align: center;
+}
+#bati-education .be-intro {
+  text-align: center;
+  line-height: 1.6;
+  color: #ddd;
+}
+#bati-education button {
+  background: linear-gradient(135deg,#d4af37,#98701b);
+  color: #171717;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 6px 3px;
+}
+#bati-education .be-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #25253b;
+  color: white;
+  border: 1px solid #555;
+  padding: 13px;
+  margin: 9px 0;
+  border-radius: 9px;
+}
+#bati-education .be-option:disabled {
+  opacity: 1;
+  cursor: default;
+}
+#bati-education .be-correct {
+  background: #175b38;
+  border-color: #43c77c;
+}
+#bati-education .be-wrong {
+  background: #682b30;
+  border-color: #e46a6a;
+}
+#bati-education #be-explication {
+  background: #25253b;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 15px;
+  line-height: 1.6;
+}
+#bati-education #be-progression {
+  color: #e4bd54;
+  font-weight: bold;
+}
+#bati-education #be-question {
+  line-height: 1.6;
+}
+</style>
+
+<section id="bati-education">
+  <h2>🎓 ENSEIGNEMENT & ÉDUCATION</h2>
+
+  <p class="be-intro">
+    Prépare-toi aux examens scolaires et concours liés à
+    l'enseignement. Apprends à ton rythme avec des corrections
+    détaillées. Aucun chronomètre !
+  </p>
+
+  <div id="be-accueil" style="text-align:center;">
+    <p>📚 20 questions pour commencer</p>
+    <p>Français • Mathématiques • Sciences • Pédagogie • Éducation</p>
+    <button onclick="beDemarrer()">COMMENCER LA FORMATION</button>
+  </div>
+
+  <div id="be-jeu" style="display:none;">
+    <p id="be-progression"></p>
+    <h3 id="be-question"></h3>
+    <div id="be-options"></div>
+    <div id="be-explication" style="display:none;"></div>
+    <button id="be-suivant" onclick="beSuivant()" style="display:none;">
+      QUESTION SUIVANTE
+    </button>
+  </div>
+
+  <div id="be-resultat" style="display:none;text-align:center;">
+    <h3>🎉 Série terminée !</h3>
+    <p id="be-score"></p>
+    <button onclick="beDemarrer()">RECOMMENCER</button>
+  </div>
+</section>
+
+<script>
+const beBanque = [
+{
+q:"Quel est le rôle principal de l'école ?",
+o:["Former et instruire les élèves","Vendre des marchandises","Organiser des élections"],
+c:0,
+e:"L'école transmet des connaissances, développe les compétences et participe à l'éducation des citoyens."
+},
+{
+q:"Que signifie le sigle CEPE ?",
+o:["Certificat d'Études Primaires Élémentaires","Concours d'Éducation pour les Professeurs","Certificat d'Enseignement Professionnel"],
+c:0,
+e:"CEPE signifie Certificat d'Études Primaires Élémentaires."
+},
+{
+q:"Quel est le pluriel de cheval ?",
+o:["Chevals","Chevaux","Chevales"],
+c:1,
+e:"Le pluriel habituel de cheval est chevaux."
+},
+{
+q:"Quelle est la nature du mot rapidement ?",
+o:["Nom","Adverbe","Adjectif"],
+c:1,
+e:"Rapidement est un adverbe de manière. Il précise comment une action est réalisée."
+},
+{
+q:"Conjugue le verbe être à la première personne du pluriel au présent.",
+o:["Nous sommes","Nous étions","Nous serons"],
+c:0,
+e:"Au présent de l'indicatif, on dit : je suis, tu es, il est, nous sommes."
+},
+{
+q:"Combien font 25 % de 200 ?",
+o:["25","50","75"],
+c:1,
+e:"25 % correspond au quart. 200 ÷ 4 = 50."
+},
+{
+q:"Combien font 12 × 8 ?",
+o:["86","96","108"],
+c:1,
+e:"12 multiplié par 8 donne 96."
+},
+{
+q:"Quelle est la formule de l'aire d'un rectangle ?",
+o:["Longueur × largeur","Longueur + largeur","2 × longueur"],
+c:0,
+e:"L'aire d'un rectangle se calcule en multipliant sa longueur par sa largeur."
+},
+{
+q:"Combien de côtés possède un triangle ?",
+o:["Deux","Trois","Quatre"],
+c:1,
+e:"Un triangle est un polygone qui possède trois côtés et trois angles."
+},
+{
+q:"Quelle est la planète la plus proche du Soleil ?",
+o:["Mars","Vénus","Mercure"],
+c:2,
+e:"Mercure est la planète la plus proche du Soleil."
+},
+{
+q:"Quel organe permet principalement de respirer ?",
+o:["Les poumons","L'estomac","Le foie"],
+c:0,
+e:"Les poumons permettent les échanges gazeux entre l'air et le sang."
+},
+{
+q:"Quel gaz les plantes absorbent-elles principalement pour la photosynthèse ?",
+o:["Oxygène","Dioxyde de carbone","Azote"],
+c:1,
+e:"Les plantes absorbent le dioxyde de carbone et utilisent la lumière pour produire leur matière organique."
+},
+{
+q:"Qu'est-ce que la pédagogie ?",
+o:["L'art et les méthodes d'enseignement","Une maladie","Une matière sportive"],
+c:0,
+e:"La pédagogie étudie les méthodes et pratiques permettant de transmettre des connaissances."
+},
+{
+q:"Pourquoi préparer une leçon avant de l'enseigner ?",
+o:["Pour organiser les objectifs et les activités","Pour éviter les élèves","Pour supprimer les exercices"],
+c:0,
+e:"La préparation aide l'enseignant à organiser le contenu, les objectifs et les activités d'apprentissage."
+},
+{
+q:"Quel est le rôle d'une évaluation formative ?",
+o:["Aider à suivre les apprentissages","Punir systématiquement les élèves","Remplacer tous les cours"],
+c:0,
+e:"L'évaluation formative permet d'identifier les acquis et les difficultés pendant l'apprentissage."
+},
+{
+q:"Que doit faire un enseignant face à un élève en difficulté ?",
+o:["L'humilier","Identifier ses difficultés et l'accompagner","L'ignorer"],
+c:1,
+e:"L'enseignant doit chercher à comprendre les difficultés et proposer un accompagnement adapté."
+},
+{
+q:"Quel document présente généralement les objectifs d'une leçon ?",
+o:["Une fiche de préparation","Un reçu de paiement","Un bulletin météo"],
+c:0,
+e:"La fiche de préparation organise les objectifs, les contenus, les activités et l'évaluation d'une leçon."
+},
+{
+q:"Quel comportement favorise un bon apprentissage ?",
+o:["L'écoute et la participation","Le désordre permanent","Le refus de travailler"],
+c:0,
+e:"L'écoute, la participation et la régularité favorisent les apprentissages."
+},
+{
+q:"Combien de minutes y a-t-il dans deux heures ?",
+o:["60","100","120"],
+c:2,
+e:"Une heure contient 60 minutes. Deux heures représentent donc 120 minutes."
+},
+{
+q:"Quelle institution est chargée de l'éducation au niveau international dans le système des Nations unies ?",
+o:["UNESCO","FIFA","OPEP"],
+c:0,
+e:"L'UNESCO est l'organisation des Nations unies chargée notamment de l'éducation, de la science et de la culture."
+}
+];
+
+let beQuestions = [];
+let beIndex = 0;
+let bePoints = 0;
+let beRepondu = false;
+
+function beMelanger(tableau) {
+  const copie = [...tableau];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
+}
+
+function beDemarrer() {
+  beQuestions = beMelanger(beBanque);
+  beIndex = 0;
+  bePoints = 0;
+  document.getElementById("be-accueil").style.display = "none";
+  document.getElementById("be-resultat").style.display = "none";
+  document.getElementById("be-jeu").style.display = "block";
+  beAfficher();
+}
+
+function beAfficher() {
+  beRepondu = false;
+  const question = beQuestions[beIndex];
+
+  document.getElementById("be-progression").textContent =
+    "Question " + (beIndex + 1) + " / " + beQuestions.length;
+
+  document.getElementById("be-question").textContent = question.q;
+
+  const zone = document.getElementById("be-options");
+  zone.innerHTML = "";
+
+  question.o.forEach((option, index) => {
+    const bouton = document.createElement("button");
+    bouton.className = "be-option";
+    bouton.textContent = String.fromCharCode(65 + index) + ". " + option;
+    bouton.onclick = () => beRepondre(index);
+    zone.appendChild(bouton);
+  });
+
+  document.getElementById("be-explication").style.display = "none";
+  document.getElementById("be-suivant").style.display = "none";
+}
+
+function beRepondre(choix) {
+  if (beRepondu) return;
+  beRepondu = true;
+
+  const question = beQuestions[beIndex];
+  const boutons = document.querySelectorAll("#be-options .be-option");
+
+  boutons.forEach((bouton, index) => {
+    bouton.disabled = true;
+    if (index === question.c) bouton.classList.add("be-correct");
+    if (index === choix && choix !== question.c) {
+      bouton.classList.add("be-wrong");
+    }
+  });
+
+  const juste = choix === question.c;
+  if (juste) bePoints++;
+
+  const explication = document.getElementById("be-explication");
+  explication.style.display = "block";
+  explication.innerHTML =
+    (juste ? "✅ Bonne réponse !" : "❌ Réponse incorrecte.") +
+    "<br><strong>Explication :</strong> " + question.e;
+
+  document.getElementById("be-suivant").style.display = "inline-block";
+  document.getElementById("be-suivant").textContent =
+    beIndex === beQuestions.length - 1 ? "VOIR MON RÉSULTAT" : "QUESTION SUIVANTE";
+}
+
+function beSuivant() {
+  if (beIndex < beQuestions.length - 1) {
+    beIndex++;
+    beAfficher();
+  } else {
+    document.getElementById("be-jeu").style.display = "none";
+    document.getElementById("be-resultat").style.display = "block";
+    document.getElementById("be-score").textContent =
+      "Ton résultat : " + bePoints + " / " + beQuestions.length +
+      ". Continue à apprendre et à progresser !";
+  }
+}
+</script>
+</body>
 </html> 
