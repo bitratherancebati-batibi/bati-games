@@ -1196,5 +1196,173 @@ function frNext() {
   }
 }
 </script>
+
+<section id="premium-mathematiques">
+  <div class="premium">
+    <h2>🔢 MATHÉMATIQUES ET RAISONNEMENT LOGIQUE</h2>
+    <p>Apprends à résoudre les problèmes étape par étape, à ton rythme.</p>
+
+    <div id="math-intro">
+      <h3>📘 Série 1 : Calcul et logique</h3>
+      <p>20 exercices avec corrections détaillées.</p>
+      <button onclick="mathStart()">COMMENCER À APPRENDRE</button>
+    </div>
+
+    <div id="math-game" style="display:none;">
+      <p id="math-progress"></p>
+      <h3 id="math-question"></h3>
+      <div id="math-answers"></div>
+      <div id="math-explanation" style="margin-top:15px;"></div>
+      <button id="math-next" style="display:none;" onclick="mathNext()">CONTINUER</button>
+    </div>
+
+    <div id="math-result" style="display:none;">
+      <h3>🎉 Série terminée !</h3>
+      <p id="math-score"></p>
+      <button onclick="mathStart()">RECOMMENCER LA SÉRIE</button>
+    </div>
+  </div>
+</section>
+
+<style>
+#premium-mathematiques button {
+  background: linear-gradient(135deg,#245bdb,#7138c8);
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 16px;
+  margin: 6px 4px;
+  cursor: pointer;
+}
+#premium-mathematiques .math-answer {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #17233d;
+  color: white;
+  border: 1px solid #52617c;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 8px 0;
+}
+#premium-mathematiques .math-answer:disabled {
+  opacity: 1;
+}
+#premium-mathematiques .math-correct {
+  background: #176b3a;
+}
+#premium-mathematiques .math-wrong {
+  background: #8b2929;
+}
+#premium-mathematiques #math-explanation {
+  background: #17233d;
+  border-left: 4px solid #d4af37;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.6;
+}
+</style>
+
+<script>
+const mathQuestions = [
+  {q:"Combien font 25 + 37 ?",a:["52","62","72"],c:1,e:"25 + 37 = 62. On additionne les unités : 5 + 7 = 12. On retient 1 dizaine, puis 2 + 3 + 1 = 6 dizaines."},
+  {q:"Combien font 12 × 8 ?",a:["86","96","108"],c:1,e:"12 × 8 = 96. On peut calculer 10 × 8 = 80, puis 2 × 8 = 16. Le total est 96."},
+  {q:"Quelle est la moitié de 150 ?",a:["65","70","75"],c:2,e:"La moitié signifie diviser par 2 : 150 ÷ 2 = 75."},
+  {q:"Combien représentent 20 % de 200 ?",a:["20","40","50"],c:1,e:"20 % = 20/100. Donc 200 × 20/100 = 40."},
+  {q:"Un article coûte 5 000 FCFA. Son prix augmente de 10 %. Quel est son nouveau prix ?",a:["5 100 FCFA","5 500 FCFA","6 000 FCFA"],c:1,e:"10 % de 5 000 = 500. Le nouveau prix est 5 000 + 500 = 5 500 FCFA."},
+  {q:"Calcule : 144 ÷ 12.",a:["10","12","14"],c:1,e:"144 ÷ 12 = 12, car 12 × 12 = 144."},
+  {q:"Quelle fraction est égale à la moitié ?",a:["1/3","2/4","3/5"],c:1,e:"2/4 se simplifie en divisant le numérateur et le dénominateur par 2 : 2/4 = 1/2."},
+  {q:"Une classe compte 30 élèves. 2/3 sont des filles. Combien y a-t-il de filles ?",a:["10","15","20"],c:2,e:"On divise 30 par 3 : 10. Puis on multiplie par 2 : 20 filles."},
+  {q:"Complète la suite : 2, 4, 6, 8, ...",a:["9","10","12"],c:1,e:"On ajoute 2 à chaque étape. Après 8 vient donc 10."},
+  {q:"Complète la suite : 3, 6, 12, 24, ...",a:["36","42","48"],c:2,e:"Chaque nombre est multiplié par 2 : 24 × 2 = 48."},
+  {q:"Un véhicule parcourt 120 km en 2 heures à vitesse constante. Quelle est sa vitesse moyenne ?",a:["50 km/h","60 km/h","80 km/h"],c:1,e:"Vitesse moyenne = distance ÷ durée. 120 ÷ 2 = 60 km/h."},
+  {q:"Si 4 cahiers coûtent 2 000 FCFA, combien coûtent 6 cahiers au même prix unitaire ?",a:["2 500 FCFA","3 000 FCFA","3 500 FCFA"],c:1,e:"Un cahier coûte 2 000 ÷ 4 = 500 FCFA. Six cahiers coûtent 6 × 500 = 3 000 FCFA."},
+  {q:"Un nombre augmenté de 15 donne 40. Quel est ce nombre ?",a:["15","25","55"],c:1,e:"On cherche le nombre de départ : 40 − 15 = 25."},
+  {q:"Combien font 7² ?",a:["14","42","49"],c:2,e:"7² signifie 7 multiplié par 7 : 7 × 7 = 49."},
+  {q:"Un rectangle mesure 8 cm de longueur et 5 cm de largeur. Quelle est son aire ?",a:["13 cm²","26 cm²","40 cm²"],c:2,e:"Aire du rectangle = longueur × largeur. 8 × 5 = 40 cm²."},
+  {q:"Quelle est la moyenne de 10, 14 et 18 ?",a:["12","14","16"],c:1,e:"Moyenne = (10 + 14 + 18) ÷ 3 = 42 ÷ 3 = 14."},
+  {q:"Résous : 3x = 21.",a:["x = 6","x = 7","x = 8"],c:1,e:"On divise les deux côtés par 3 : x = 21 ÷ 3 = 7."},
+  {q:"Un commerçant achète un objet à 4 000 FCFA et le revend à 5 000 FCFA. Quel est son bénéfice ?",a:["500 FCFA","1 000 FCFA","1 500 FCFA"],c:1,e:"Bénéfice = prix de vente − prix d'achat. 5 000 − 4 000 = 1 000 FCFA."},
+  {q:"Combien de minutes y a-t-il dans 3 heures ?",a:["120","150","180"],c:2,e:"Une heure compte 60 minutes. Donc 3 × 60 = 180 minutes."},
+  {q:"Dans une boîte, il y a 5 boules rouges et 5 boules bleues. Combien de boules faut-il prendre au minimum, sans regarder, pour être certain d'avoir deux boules de même couleur ?",a:["2","3","4"],c:1,e:"Avec seulement deux boules, on peut avoir une rouge et une bleue. Avec trois boules, deux seront forcément de la même couleur : c'est le principe des tiroirs."}
+];
+
+let mathIndex = 0;
+let mathScore = 0;
+let mathAnswered = false;
+
+function mathStart() {
+  mathIndex = 0;
+  mathScore = 0;
+  mathAnswered = false;
+  document.getElementById("math-intro").style.display = "none";
+  document.getElementById("math-result").style.display = "none";
+  document.getElementById("math-game").style.display = "block";
+  mathShow();
+}
+
+function mathShow() {
+  mathAnswered = false;
+  const item = mathQuestions[mathIndex];
+
+  document.getElementById("math-progress").textContent =
+    "Question " + (mathIndex + 1) + " / " + mathQuestions.length;
+  document.getElementById("math-question").textContent = item.q;
+  document.getElementById("math-explanation").textContent = "";
+  document.getElementById("math-next").style.display = "none";
+
+  const area = document.getElementById("math-answers");
+  area.innerHTML = "";
+
+  item.a.forEach((answer, i) => {
+    const button = document.createElement("button");
+    button.className = "math-answer";
+    button.textContent = answer;
+    button.onclick = () => mathAnswer(i);
+    area.appendChild(button);
+  });
+}
+
+function mathAnswer(choice) {
+  if (mathAnswered) return;
+  mathAnswered = true;
+
+  const item = mathQuestions[mathIndex];
+  const buttons = document.querySelectorAll("#math-answers button");
+
+  buttons.forEach((button, i) => {
+    button.disabled = true;
+    if (i === item.c) button.classList.add("math-correct");
+    else if (i === choice) button.classList.add("math-wrong");
+  });
+
+  if (choice === item.c) {
+    mathScore++;
+    document.getElementById("math-explanation").textContent =
+      "✅ Bonne réponse ! " + item.e;
+  } else {
+    document.getElementById("math-explanation").textContent =
+      "❌ Bonne réponse : " + item.a[item.c] + ". " + item.e;
+  }
+
+  document.getElementById("math-next").style.display = "inline-block";
+  document.getElementById("math-next").textContent =
+    mathIndex === mathQuestions.length - 1 ? "VOIR MON RÉSULTAT" : "CONTINUER";
+}
+
+function mathNext() {
+  if (!mathAnswered) return;
+  mathIndex++;
+
+  if (mathIndex < mathQuestions.length) {
+    mathShow();
+  } else {
+    document.getElementById("math-game").style.display = "none";
+    document.getElementById("math-result").style.display = "block";
+    document.getElementById("math-score").textContent =
+      "Tu as obtenu " + mathScore + " bonne(s) réponse(s) sur 20. Relis les explications et recommence pour progresser.";
+  }
+}
+</script>
 </body>
 </html> 
