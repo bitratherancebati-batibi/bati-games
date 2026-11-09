@@ -1,0 +1,340 @@
+require("dotenv").config();
+
+const express = require("express");
+const helmet = require("helmet");
+const { Pool } = require("pg");
+const crypto = require("crypto");
+const path = require("path");
+
+const app = express();
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.json({ limit: "20kb" }));
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.PGSSLMODE === "require"
+    ? { rejectUnauthorized: false }
+    : undefined
+});
+
+const PRICE = 1000;
+const CURRENCY = "XOF";
+const COOKIE = "bati_session";
+
+function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
+  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+function checkPassword(password, stored) {
+  if (!stored || !stored.includes(":")) return false;
+  const [salt, oldHash] = stored.split(":");
+  const newHash = crypto.scryptSync(password, salt, 64);
+  const oldBuffer = Buffer.from(oldHash, "hex");
+  return oldBuffer.length === newHash.length &&
+    crypto.timingSafeEqual(newHash, oldBuffer);
+}
+
+function makeToken(user) {
+  const payload = Buffer.from(JSON.stringify({
+    id: user.id,
+    exp: Date.now() + 7 * 24 * 60 * 60 * 1000
+  })).toString("base64url");
+
+  const signature = crypto
+    .createHmac("sha256", process.env.SESSION_SECRET)
+    .update(payload)
+    .digest("base64url");
+
+  return `${payload}.${signature}`;
+}
+
+function readToken(req) {
+  const cookies = (req.headers.cookie || "").split(";").map(x => x.trim());
+  const item = cookies.find(x => x.startsWith(COOKIE + "="));
+  return item ? decodeURIComponent(item.substring(COOKIE.length + 1)) : null;
+}
+
+function getSession(req) {
+  try {
+    const token = readToken(req);
+    if (!token) return null;
+
+    const [payload, signature] = token.split(".");
+    const expected = crypto.createHmac("sha256", process.env.SESSION_SECRET)
+      .update(payload).digest("base64url");
+
+    const a = Buffer.from(signature);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString());
+    if (data.exp < Date.now()) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+async function requireUser(req, res, next) {
+  const session = getSession(req);
+  if (!session) return res.status(401).json({ error: "Connexion nécessaire." });
+
+  const result = await pool.query(
+    "SELECT id, email, name, role, premium_until FROM users WHERE id=$1",
+    [session.id]
+  );
+
+  if (!result.rows.length) return res.status(401).json({ error: "Compte introuvable." });
+  req.user = result.rows[0];
+  next();
+}
+
+async function initDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'member',
+      premium_until TIMESTAMPTZ,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      tx_ref TEXT UNIQUE NOT NULL,
+      user_id INTEGER REFERENCES users(id),
+      amount INTEGER NOT NULL,
+      currency TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      transaction_id TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
+  const email = process.env.ADMIN_EMAIL.toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password || password.length < 12) {
+    throw new Error("Configure ADMIN_EMAIL et un ADMIN_PASSWORD de 12 caractères minimum.");
+  }
+
+  await pool.query(`
+    INSERT INTO users (email, name, password_hash, role)
+    VALUES ($1, 'Administrateur BATI GAMES', $2, 'admin')
+    ON CONFLICT (email)
+    DO UPDATE SET password_hash=$2, role='admin'
+  `, [email, hashPassword(password)]);
+}
+
+app.post("/api/register", async (req, res) => {
+  try {
+    const { email, name, password } = req.body;
+    const cleanEmail = String(email || "").trim().toLowerCase();
+
+    if (!cleanEmail.includes("@") || !name || String(password || "").length < 10) {
+      return res.status(400).json({ error: "E-mail, nom et mot de passe de 10 caractères minimum requis." });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO users (email, name, password_hash)
+       VALUES ($1, $2, $3) RETURNING id, email, name, role, premium_until`,
+      [cleanEmail, String(name).trim(), hashPassword(password)]
+    );
+
+    const user = result.rows[0];
+    res.cookie(COOKIE, makeToken(user), {
+      httpOnly: true, secure: true, sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, path: "/"
+    });
+    res.json({ user: { email: user.email, name: user.name } });
+  } catch {
+    res.status(400).json({ error: "Inscription impossible. Cet e-mail est peut-être déjà utilisé." });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const result = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+  const user = result.rows[0];
+
+  if (!user || !checkPassword(String(req.body.password || ""), user.password_hash)) {
+    return res.status(401).json({ error: "E-mail ou mot de passe incorrect." });
+  }
+
+  res.cookie(COOKIE, makeToken(user), {
+    httpOnly: true, secure: true, sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, path: "/"
+  });
+  res.json({ message: "Connexion réussie." });
+});
+
+app.post("/api/logout", (req, res) => {
+  res.clearCookie(COOKIE, { httpOnly: true, secure: true, sameSite: "lax", path: "/" });
+  res.json({ message: "Déconnexion réussie." });
+});
+
+app.get("/api/me", requireUser, (req, res) => {
+  const admin = req.user.role === "admin";
+  const active = admin || (
+    req.user.premium_until && new Date(req.user.premium_until) > new Date()
+  );
+
+  res.json({
+    email: req.user.email,
+    name: req.user.name,
+    admin,
+    premium: Boolean(active),
+    premiumUntil: admin ? null : req.user.premium_until
+  });
+});
+
+app.post("/api/checkout", requireUser, async (req, res) => {
+  try {
+    if (req.user.role === "admin") {
+      return res.status(400).json({ error: "Ton accès administrateur est gratuit." });
+    }
+
+    const txRef = "BATI-" + crypto.randomUUID();
+
+    await pool.query(
+      `INSERT INTO payments (tx_ref, user_id, amount, currency)
+       VALUES ($1, $2, $3, $4)`,
+      [txRef, req.user.id, PRICE, CURRENCY]
+    );
+
+    const response = await fetch("https://api.flutterwave.com/v3/payments", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        tx_ref: txRef,
+        amount: PRICE,
+        currency: CURRENCY,
+        redirect_url: `${process.env.BASE_URL}/?payment=return`,
+        customer: { email: req.user.email, name: req.user.name },
+        customizations: {
+          title: "BATI GAMES Premium",
+          description: "Abonnement de 30 jours"
+        }
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.data?.link) {
+      throw new Error("Création du paiement impossible.");
+    }
+
+    res.json({ link: data.data.link });
+  } catch (error) {
+    console.error("Checkout error:", error.message);
+    res.status(500).json({ error: "Impossible de préparer le paiement." });
+  }
+});
+
+async function verifyAndActivate(transactionId) {
+  const response = await fetch(
+    `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transactionId)}/verify`,
+    { headers: { Authorization: `Bearer ${process.env.FLW_SECRET_KEY}` } }
+  );
+
+  const result = await response.json();
+  const payment = result.data;
+
+  if (!response.ok || result.status !== "success" || !payment) return false;
+  if (payment.status !== "successful") return false;
+  if (Number(payment.amount) !== PRICE || payment.currency !== CURRENCY) return false;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const found = await client.query(
+      "SELECT * FROM payments WHERE tx_ref=$1 FOR UPDATE",
+      [payment.tx_ref]
+    );
+
+    if (!found.rows.length) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+
+    const order = found.rows[0];
+    if (order.status === "paid") {
+      await client.query("COMMIT");
+      return true;
+    }
+
+    if (order.amount !== PRICE || order.currency !== CURRENCY) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+
+    await client.query(
+      `UPDATE payments SET status='paid', transaction_id=$1 WHERE id=$2`,
+      [String(transactionId), order.id]
+    );
+
+    await client.query(
+      `UPDATE users
+       SET premium_until = GREATEST(COALESCE(premium_until, NOW()), NOW())
+                           + INTERVAL '30 days'
+       WHERE id=$1 AND role <> 'admin'`,
+      [order.user_id]
+    );
+
+    await client.query("COMMIT");
+    return true;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+app.post("/api/flutterwave-webhook", async (req, res) => {
+  const supplied = req.get("verif-hash") || "";
+  const expected = process.env.FLW_SECRET_HASH || "";
+
+  if (!expected || supplied.length !== expected.length ||
+      !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) {
+    return res.sendStatus(401);
+  }
+
+  try {
+    const id = req.body?.data?.id;
+    if (id) await verifyAndActivate(id);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Webhook error:", error.message);
+    res.sendStatus(500);
+  }
+});
+
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// Ne pas rendre les fichiers serveur publics.
+app.use((req, res, next) => {
+  if (["/server.js", "/package.json", "/README.md"].includes(req.path)) {
+    return res.sendStatus(404);
+  }
+  next();
+});
+
+app.use(express.static(__dirname));
+
+const PORT = process.env.PORT || 10000;
+
+initDatabase()
+  .then(() => {
+    app.listen(PORT, () => console.log("BATI GAMES server ready."));
+  })
+  .catch(error => {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  });
