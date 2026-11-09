@@ -3414,5 +3414,296 @@ function bcSuivant() {
   }
 }
 </script>
-</body>
+
+<style>
+#bati-progression {
+  background: #171725;
+  color: white;
+  max-width: 850px;
+  margin: 25px auto;
+  padding: 22px 16px;
+  border-radius: 18px;
+  border: 1px solid #d4af37;
+  font-family: Arial, sans-serif;
+}
+#bati-progression h2,
+#bati-progression h3 {
+  color: #e4bd54;
+  text-align: center;
+}
+#bati-progression .bp-intro {
+  text-align: center;
+  color: #ddd;
+  line-height: 1.6;
+}
+#bati-progression label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+#bati-progression input,
+#bati-progression select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #777;
+  background: #29293e;
+  color: white;
+  font-size: 15px;
+}
+#bati-progression button {
+  background: linear-gradient(135deg,#d4af37,#98701b);
+  color: #171717;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 17px;
+  margin-top: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#bati-progression .bp-stat {
+  background: #29293e;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 8px 0;
+}
+#bati-progression .bp-number {
+  color: #e4bd54;
+  font-size: 25px;
+  font-weight: bold;
+}
+#bati-progression .bp-resultat {
+  background: #29293e;
+  border-left: 4px solid #d4af37;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+#bati-progression .bp-barre {
+  background: #444;
+  height: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+#bati-progression .bp-remplissage {
+  background: linear-gradient(90deg,#98701b,#e4bd54);
+  height: 100%;
+}
+#bati-progression .bp-message {
+  color: #e4bd54;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+</style>
+
+<section id="bati-progression">
+  <h2>📊 MES RÉSULTATS & MA PROGRESSION</h2>
+
+  <p class="bp-intro">
+    Enregistre tes résultats après chaque entraînement.
+    Consulte tes scores et observe tes progrès au fil du temps.
+  </p>
+
+  <div class="bp-stat">
+    <div>Nombre d'entraînements</div>
+    <div class="bp-number" id="bp-total">0</div>
+  </div>
+
+  <div class="bp-stat">
+    <div>Score moyen</div>
+    <div class="bp-number" id="bp-moyenne">0 %</div>
+  </div>
+
+  <div class="bp-stat">
+    <div>Meilleur résultat</div>
+    <div class="bp-number" id="bp-meilleur">0 %</div>
+  </div>
+
+  <h3>✍️ Enregistrer un résultat</h3>
+
+  <label for="bp-module">Choisis ton module</label>
+  <select id="bp-module">
+    <option value="Fonction publique">Fonction publique</option>
+    <option value="Français">Français</option>
+    <option value="Mathématiques et logique">Mathématiques et logique</option>
+    <option value="Informatique">Informatique</option>
+    <option value="Culture générale mondiale">Culture générale mondiale</option>
+    <option value="Police, gendarmerie et armée">Police, gendarmerie et armée</option>
+    <option value="Santé et métiers techniques">Santé et métiers techniques</option>
+    <option value="Enseignement et éducation">Enseignement et éducation</option>
+    <option value="Concours professionnels">Concours professionnels</option>
+    <option value="Autre entraînement">Autre entraînement</option>
+  </select>
+
+  <label for="bp-score">Nombre de bonnes réponses</label>
+  <input id="bp-score" type="number" min="0" step="1" placeholder="Exemple : 15">
+
+  <label for="bp-total-questions">Nombre total de questions</label>
+  <input id="bp-total-questions" type="number" min="1" step="1" placeholder="Exemple : 20">
+
+  <button onclick="bpEnregistrer()">ENREGISTRER MON RÉSULTAT</button>
+
+  <p id="bp-message" class="bp-message"></p>
+
+  <h3>📈 Mon évolution</h3>
+  <div id="bp-evolution"></div>
+
+  <h3>📚 Historique de mes résultats</h3>
+  <div id="bp-historique"></div>
+
+  <div style="text-align:center;">
+    <button onclick="bpEffacer()">EFFACER MON HISTORIQUE</button>
+  </div>
+
+  <p class="bp-intro" style="font-size:12px;margin-top:20px;">
+    Tes résultats sont enregistrés sur cet appareil et dans ce navigateur.
+    Ils ne sont pas encore synchronisés avec un compte en ligne.
+  </p>
+</section>
+
+<script>
+const BP_CLE = "bati_games_progression_v1";
+
+function bpCharger() {
+  try {
+    const donnees = JSON.parse(localStorage.getItem(BP_CLE) || "[]");
+    return Array.isArray(donnees) ? donnees : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function bpEnregistrer() {
+  const module = document.getElementById("bp-module").value;
+  const score = Number(document.getElementById("bp-score").value);
+  const total = Number(document.getElementById("bp-total-questions").value);
+  const message = document.getElementById("bp-message");
+
+  if (
+    document.getElementById("bp-score").value === "" ||
+    document.getElementById("bp-total-questions").value === "" ||
+    !Number.isInteger(score) ||
+    !Number.isInteger(total) ||
+    total < 1 ||
+    score < 0 ||
+    score > total
+  ) {
+    message.textContent =
+      "⚠️ Vérifie tes résultats : le score doit être un nombre entier compris entre 0 et le total des questions.";
+    return;
+  }
+
+  const historique = bpCharger();
+
+  historique.unshift({
+    module: module,
+    score: score,
+    total: total,
+    pourcentage: Math.round((score / total) * 100),
+    date: new Date().toISOString()
+  });
+
+  try {
+    localStorage.setItem(BP_CLE, JSON.stringify(historique));
+    document.getElementById("bp-score").value = "";
+    document.getElementById("bp-total-questions").value = "";
+    message.textContent = "✅ Résultat enregistré avec succès !";
+    bpAfficher();
+  } catch (e) {
+    message.textContent =
+      "Impossible d'enregistrer. Vérifie l'espace disponible dans ton navigateur.";
+  }
+}
+
+function bpAfficher() {
+  const historique = bpCharger();
+
+  document.getElementById("bp-total").textContent = historique.length;
+
+  if (historique.length === 0) {
+    document.getElementById("bp-moyenne").textContent = "0 %";
+    document.getElementById("bp-meilleur").textContent = "0 %";
+    document.getElementById("bp-evolution").innerHTML =
+      "<p>Aucun résultat enregistré pour le moment.</p>";
+    document.getElementById("bp-historique").innerHTML =
+      "<p>Ton historique apparaîtra ici après ton premier entraînement.</p>";
+    return;
+  }
+
+  const moyenne = Math.round(
+    historique.reduce((s, r) => s + r.pourcentage, 0) / historique.length
+  );
+
+  const meilleur = Math.max(...historique.map(r => r.pourcentage));
+
+  document.getElementById("bp-moyenne").textContent = moyenne + " %";
+  document.getElementById("bp-meilleur").textContent = meilleur + " %";
+
+  const modules = [...new Set(historique.map(r => r.module))];
+
+  document.getElementById("bp-evolution").innerHTML = modules.map(module => {
+    const resultats = historique.filter(r => r.module === module);
+    const moyenneModule = Math.round(
+      resultats.reduce((s, r) => s + r.pourcentage, 0) / resultats.length
+    );
+
+    return `
+      <div class="bp-resultat">
+        <strong>${bpSecuriser(module)}</strong>
+        <div>${resultats.length} entraînement(s) — Moyenne : ${moyenneModule} %</div>
+        <div class="bp-barre">
+          <div class="bp-remplissage" style="width:${moyenneModule}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("bp-historique").innerHTML =
+    historique.map(r => {
+      const date = new Date(r.date);
+      const dateTexte = isNaN(date.getTime())
+        ? "Date inconnue"
+        : date.toLocaleDateString("fr-FR");
+
+      return `
+        <div class="bp-resultat">
+          <strong>${bpSecuriser(r.module)}</strong><br>
+          Score : ${r.score} / ${r.total}<br>
+          Résultat : ${r.pourcentage} %<br>
+          <small>${dateTexte}</small>
+        </div>
+      `;
+    }).join("");
+}
+
+function bpSecuriser(texte) {
+  const element = document.createElement("span");
+  element.textContent = texte;
+  return element.innerHTML;
+}
+
+function bpEffacer() {
+  if (!confirm("Veux-tu vraiment effacer tous tes résultats enregistrés sur cet appareil ?")) {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(BP_CLE);
+    document.getElementById("bp-message").textContent =
+      "Historique effacé.";
+    bpAfficher();
+  } catch (e) {
+    document.getElementById("bp-message").textContent =
+      "Impossible d'effacer l'historique.";
+  }
+}
+
+bpAfficher();
+      </script>
+  </body>
 </html> 
