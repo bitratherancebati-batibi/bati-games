@@ -1028,5 +1028,173 @@ function fpNext() {
   }
 }
       </script>
+
+<section id="premium-francais">
+  <div class="premium">
+    <h2>📚 FRANÇAIS ET EXPRESSION ÉCRITE</h2>
+    <p>Améliore ton français grâce à 20 exercices avec corrections détaillées.</p>
+
+    <div id="fr-intro">
+      <h3>✍️ Série 1 : Maîtriser le français</h3>
+      <p>Grammaire, conjugaison, orthographe et vocabulaire.</p>
+      <button onclick="frStart()">COMMENCER À APPRENDRE</button>
+    </div>
+
+    <div id="fr-game" style="display:none;">
+      <p id="fr-progress"></p>
+      <h3 id="fr-question"></h3>
+      <div id="fr-answers"></div>
+      <div id="fr-explanation" style="margin-top:15px;"></div>
+      <button id="fr-next" style="display:none;" onclick="frNext()">CONTINUER</button>
+    </div>
+
+    <div id="fr-result" style="display:none;">
+      <h3>🎉 Série terminée !</h3>
+      <p id="fr-score"></p>
+      <button onclick="frStart()">RECOMMENCER LA SÉRIE</button>
+    </div>
+  </div>
+</section>
+
+<style>
+#premium-francais button {
+  background: linear-gradient(135deg,#245bdb,#7138c8);
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 16px;
+  margin: 6px 4px;
+  cursor: pointer;
+}
+#premium-francais .fr-answer {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #17233d;
+  color: white;
+  border: 1px solid #52617c;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 8px 0;
+}
+#premium-francais .fr-answer:disabled {
+  opacity: 1;
+}
+#premium-francais .fr-correct {
+  background: #176b3a;
+}
+#premium-francais .fr-wrong {
+  background: #8b2929;
+}
+#premium-francais #fr-explanation {
+  background: #17233d;
+  border-left: 4px solid #d4af37;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.6;
+}
+</style>
+
+<script>
+const frQuestions = [
+  {q:"Quelle phrase est correctement écrite ?",a:["Les enfant jouent.","Les enfants jouent.","Les enfants joue."],c:1,e:"« Enfants » prend un s au pluriel et le verbe « jouer » s'accorde avec le sujet : ils jouent."},
+  {q:"Quel est le verbe dans la phrase : « Le candidat révise son cours » ?",a:["Candidat","Révise","Cours"],c:1,e:"« Révise » est le verbe. Il exprime l'action réalisée par le sujet."},
+  {q:"Quel est le pluriel de « cheval » ?",a:["Chevals","Chevaux","Chevaus"],c:1,e:"Le pluriel de cheval est chevaux. De nombreux noms en -al forment leur pluriel en -aux."},
+  {q:"Complète : Nous ___ nos leçons chaque soir.",a:["révisons","révise","révisez"],c:0,e:"Avec le sujet « nous », le verbe réviser au présent devient « nous révisons »."},
+  {q:"Quel mot est un adjectif qualificatif ?",a:["Rapidement","Intelligent","Courir"],c:1,e:"« Intelligent » est un adjectif qualificatif : il donne une caractéristique à un nom."},
+  {q:"Quel est le contraire de « généreux » ?",a:["Altruiste","Avare","Bienveillant"],c:1,e:"« Avare » désigne une personne qui hésite à donner ou à dépenser. C'est un contraire de généreux."},
+  {q:"Quelle phrase est au passé composé ?",a:["Il étudie.","Il étudiera.","Il a étudié."],c:2,e:"Le passé composé se forme généralement avec l'auxiliaire avoir ou être au présent suivi du participe passé."},
+  {q:"Quel est le féminin de « directeur » ?",a:["Directeuse","Directrice","Directeure"],c:1,e:"Le féminin courant de directeur est directrice."},
+  {q:"Complète : Elle est ___ à l'école.",a:["allé","allée","aller"],c:1,e:"Avec l'auxiliaire être, le participe passé s'accorde avec le sujet. « Elle » est féminin singulier : allée."},
+  {q:"Quel signe termine normalement une question directe ?",a:["Le point d'interrogation (?)","Le point-virgule (;)","La virgule (,)"],c:0,e:"Une question directe se termine par un point d'interrogation."},
+  {q:"Quel est le sujet dans : « Les élèves préparent le concours » ?",a:["Le concours","Préparent","Les élèves"],c:2,e:"« Les élèves » est le groupe sujet : c'est lui qui réalise l'action de préparer."},
+  {q:"Quel mot est correctement orthographié ?",a:["Acceuil","Accueil","Acueil"],c:1,e:"L'orthographe correcte est « accueil », avec un u avant le e."},
+  {q:"Complète : Si j'avais le temps, je ___ davantage.",a:["étudierai","étudierais","étudiais"],c:1,e:"Dans cette phrase hypothétique, on utilise le conditionnel présent : « j'étudierais »."},
+  {q:"Quel est le synonyme de « commencer » ?",a:["Débuter","Terminer","Oublier"],c:0,e:"« Débuter » signifie commencer ou entreprendre quelque chose."},
+  {q:"Quelle phrase est correctement ponctuée ?",a:["Bonjour comment allez-vous.","Bonjour, comment allez-vous ?","Bonjour comment, allez-vous."],c:1,e:"La virgule sépare l'interpellation « Bonjour » et le point d'interrogation termine la question."},
+  {q:"Dans « Il parle doucement », le mot « doucement » est :",a:["Un nom","Un adverbe","Un adjectif"],c:1,e:"« Doucement » est un adverbe : il précise la manière dont il parle."},
+  {q:"Quel est le participe passé du verbe « prendre » ?",a:["Prenu","Pris","Prendu"],c:1,e:"Le participe passé du verbe prendre est « pris »."},
+  {q:"Complète : Les lettres que j'ai ___ sont importantes.",a:["reçu","reçues","recevoir"],c:1,e:"Le COD « que », placé avant le verbe, représente « les lettres ». Le participe passé avec avoir s'accorde donc au féminin pluriel : reçues."},
+  {q:"Que signifie « persévérer » ?",a:["Abandonner rapidement","Continuer malgré les difficultés","Changer sans raison"],c:1,e:"Persévérer signifie poursuivre ses efforts malgré les obstacles."},
+  {q:"Quel est le rôle principal d'un paragraphe dans un texte ?",a:["Présenter et développer une idée","Remplacer tous les titres","Terminer obligatoirement le texte"],c:0,e:"Un paragraphe organise les idées et développe généralement un aspect précis du sujet."}
+];
+
+let frIndex = 0;
+let frScore = 0;
+let frAnswered = false;
+
+function frStart() {
+  frIndex = 0;
+  frScore = 0;
+  frAnswered = false;
+  document.getElementById("fr-intro").style.display = "none";
+  document.getElementById("fr-result").style.display = "none";
+  document.getElementById("fr-game").style.display = "block";
+  frShow();
+}
+
+function frShow() {
+  frAnswered = false;
+  const item = frQuestions[frIndex];
+
+  document.getElementById("fr-progress").textContent =
+    "Question " + (frIndex + 1) + " / " + frQuestions.length;
+  document.getElementById("fr-question").textContent = item.q;
+  document.getElementById("fr-explanation").textContent = "";
+  document.getElementById("fr-next").style.display = "none";
+
+  const area = document.getElementById("fr-answers");
+  area.innerHTML = "";
+
+  item.a.forEach((answer, i) => {
+    const button = document.createElement("button");
+    button.className = "fr-answer";
+    button.textContent = answer;
+    button.onclick = () => frAnswer(i);
+    area.appendChild(button);
+  });
+}
+
+function frAnswer(choice) {
+  if (frAnswered) return;
+  frAnswered = true;
+
+  const item = frQuestions[frIndex];
+  const buttons = document.querySelectorAll("#fr-answers button");
+
+  buttons.forEach((button, i) => {
+    button.disabled = true;
+    if (i === item.c) button.classList.add("fr-correct");
+    else if (i === choice) button.classList.add("fr-wrong");
+  });
+
+  if (choice === item.c) {
+    frScore++;
+    document.getElementById("fr-explanation").textContent =
+      "✅ Bonne réponse ! " + item.e;
+  } else {
+    document.getElementById("fr-explanation").textContent =
+      "❌ Bonne réponse : " + item.a[item.c] + ". " + item.e;
+  }
+
+  document.getElementById("fr-next").style.display = "inline-block";
+  document.getElementById("fr-next").textContent =
+    frIndex === frQuestions.length - 1 ? "VOIR MON RÉSULTAT" : "CONTINUER";
+}
+
+function frNext() {
+  if (!frAnswered) return;
+  frIndex++;
+
+  if (frIndex < frQuestions.length) {
+    frShow();
+  } else {
+    document.getElementById("fr-game").style.display = "none";
+    document.getElementById("fr-result").style.display = "block";
+    document.getElementById("fr-score").textContent =
+      "Tu as obtenu " + frScore + " bonne(s) réponse(s) sur 20. Relis les explications et recommence pour progresser.";
+  }
+}
+</script>
 </body>
 </html> 
