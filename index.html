@@ -275,7 +275,9 @@ let score = 0;
 let level = 1;
 let answered = false;
 let currentGame = "";
-let lastRiddle = -1;
+let quizDeck = [];
+let riddleDeck = [];
+let usedGenerated = new Set();
 
 const quizFacts = [
   {q:"Quelle est la capitale de la Côte d'Ivoire ?",a:"Yamoussoukro",d:["Abidjan","Bouaké"]},
@@ -285,7 +287,15 @@ const quizFacts = [
   {q:"Quel est le plus grand océan du monde ?",a:"L'océan Pacifique",d:["L'océan Indien","L'océan Atlantique"]},
   {q:"Quelle est la langue officielle du Brésil ?",a:"Le portugais",d:["L'espagnol","Le français"]},
   {q:"Combien de côtés possède un hexagone ?",a:"6",d:["5","8"]},
-  {q:"Quel est le satellite naturel de la Terre ?",a:"La Lune",d:["Mars","Le Soleil"]}
+  {q:"Quel est le satellite naturel de la Terre ?",a:"La Lune",d:["Mars","Le Soleil"]},
+  {q:"Combien de mois compte une année ?",a:"12",d:["10","11"]},
+  {q:"Quel continent abrite la Côte d'Ivoire ?",a:"L'Afrique",d:["L'Europe","L'Asie"]},
+  {q:"Quel gaz les plantes absorbent-elles principalement ?",a:"Le dioxyde de carbone",d:["L'oxygène","L'azote"]},
+  {q:"Combien font 100 centimètres ?",a:"1 mètre",d:["10 mètres","100 mètres"]},
+  {q:"Quel est le plus grand animal terrestre ?",a:"L'éléphant",d:["Le lion","La girafe"]},
+  {q:"Quelle étoile éclaire la Terre ?",a:"Le Soleil",d:["La Lune","Mars"]},
+  {q:"Combien de lettres compte l'alphabet français ?",a:"26",d:["24","28"]},
+  {q:"Quel est le contraire de chaud ?",a:"Froid",d:["Sec","Lourd"]}
 ];
 
 const riddles = [
@@ -300,68 +310,101 @@ const riddles = [
   {q:"Qu'est-ce qui a un cou mais pas de tête ?",a:"Une bouteille",d:["Une chemise","Une chaise"]},
   {q:"Qu'est-ce qui court sans avoir de jambes ?",a:"L'eau",d:["Un chien","Un enfant"]},
   {q:"Je grandis quand on me nourrit et je meurs quand on me donne à boire. Qui suis-je ?",a:"Le feu",d:["Une plante","Un poisson"]},
-  {q:"Qu'est-ce qui a des feuilles mais pas de branches ?",a:"Un livre",d:["Un arbre","Une fleur"]}
+  {q:"Qu'est-ce qui a des feuilles mais pas de branches ?",a:"Un livre",d:["Un arbre","Une fleur"]},
+  {q:"Je suis plein de trous mais je retiens l'eau. Qui suis-je ?",a:"Une éponge",d:["Un filet","Un panier"]},
+  {q:"Qu'est-ce qui a des mains mais ne peut pas applaudir ?",a:"Une montre",d:["Un enfant","Un oiseau"]},
+  {q:"Je disparais dès qu'on prononce mon nom. Qui suis-je ?",a:"Le silence",d:["La nuit","Le vent"]},
+  {q:"Qu'est-ce qui appartient à toi mais que les autres utilisent plus que toi ?",a:"Ton prénom",d:["Ton téléphone","Ton argent"]}
 ];
 
 function randomInt(min,max){
   return Math.floor(Math.random()*(max-min+1))+min;
 }
 
-function makeQuestion(q,correct,distractors){
-  const choices = [String(correct),...distractors.map(String)];
-  for(let i=choices.length-1;i>0;i--){
+function shuffle(array){
+  const result=[...array];
+  for(let i=result.length-1;i>0;i--){
     const j=randomInt(0,i);
-    [choices[i],choices[j]]=[choices[j],choices[i]];
+    [result[i],result[j]]=[result[j],result[i]];
   }
-  return {q,a:choices,c:choices.indexOf(String(correct))};
+  return result;
+}
+
+function makeQuestion(q,correct,distractors){
+  const choices=[String(correct),...distractors.map(String)];
+  const unique=[...new Set(choices)];
+  while(unique.length<3){
+    unique.push("Autre réponse "+randomInt(1,9999));
+  }
+  const finalChoices=shuffle(unique.slice(0,3));
+  return {
+    q,
+    a:finalChoices,
+    c:finalChoices.indexOf(String(correct))
+  };
+}
+
+function getDeckQuestion(deckName,bank){
+  let deck=deckName==="quiz"?quizDeck:riddleDeck;
+
+  if(deck.length===0){
+    deck=shuffle(bank);
+  }
+
+  const item=deck.pop();
+
+  if(deckName==="quiz") quizDeck=deck;
+  else riddleDeck=deck;
+
+  return makeQuestion(item.q,item.a,item.d);
 }
 
 function generateMathQuestion(level,challenge=false){
-  const max=Math.min(10+level*5,1000);
-  const operations=["+","-","×"];
-  const op=operations[randomInt(0,level<3?1:2)];
-  let a=randomInt(1,max);
-  let b=randomInt(1,max);
-  let result;
+  let question;
+  let attempts=0;
 
-  if(op==="-"){
-    if(b>a)[a,b]=[b,a];
-    result=a-b;
-  }else if(op==="×"){
-    a=randomInt(2,Math.min(12,2+level));
-    b=randomInt(2,Math.min(12,2+level));
-    result=a*b;
-  }else{
-    result=a+b;
-  }
+  do{
+    const max=Math.min(10+level*10,10000);
+    const operations=level<3?["+","-"]:["+","-","×"];
+    const op=operations[randomInt(0,operations.length-1)];
+    let a=randomInt(1,max);
+    let b=randomInt(1,max);
+    let result;
 
-  const label=challenge?"Défi":"Calcul";
-  const wrong1=result+randomInt(1,5);
-  const wrong2=Math.max(0,result-randomInt(1,5));
+    if(op==="-"){
+      if(b>a)[a,b]=[b,a];
+      result=a-b;
+    }else if(op==="×"){
+      a=randomInt(2,Math.min(20,3+level));
+      b=randomInt(2,Math.min(20,3+level));
+      result=a*b;
+    }else{
+      result=a+b;
+    }
 
-  return makeQuestion(
-    `${label} : combien font ${a} ${op} ${b} ?`,
-    result,
-    [wrong1,wrong2]
-  );
+    const label=challenge?"Défi":"Calcul";
+    question=makeQuestion(
+      `${label} : combien font ${a} ${op} ${b} ?`,
+      result,
+      [result+randomInt(1,9),result+randomInt(10,20)]
+    );
+
+    attempts++;
+  }while(usedGenerated.has(question.q) && attempts<100);
+
+  usedGenerated.add(question.q);
+  return question;
 }
 
 function generateQuizQuestion(level){
   if(Math.random()<0.5){
     return generateMathQuestion(level);
   }
-  const fact=quizFacts[randomInt(0,quizFacts.length-1)];
-  return makeQuestion(fact.q,fact.a,fact.d);
+  return getDeckQuestion("quiz",quizFacts);
 }
 
 function generateRiddleQuestion(){
-  let index=randomInt(0,riddles.length-1);
-  if(riddles.length>1 && index===lastRiddle){
-    index=(index+1)%riddles.length;
-  }
-  lastRiddle=index;
-  const r=riddles[index];
-  return makeQuestion(r.q,r.a,r.d);
+  return getDeckQuestion("riddle",riddles);
 }
 
 function generateChallengeQuestion(level){
@@ -369,27 +412,45 @@ function generateChallengeQuestion(level){
     return generateMathQuestion(level,true);
   }
 
-  const start=randomInt(1,Math.min(20+level*5,500));
-  const step=randomInt(2,Math.min(5+level,30));
-  const answer=start+step;
+  let question;
+  let attempts=0;
 
-  return makeQuestion(
-    `Trouve le nombre suivant : ${start}, ${start+step}, ${start+2*step}, ${start+3*step}, ?`,
-    answer,
-    [answer+step,answer-1]
-  );
+  do{
+    const start=randomInt(1,Math.min(100+level*20,10000));
+    const step=randomInt(2,Math.min(10+level,100));
+    const answer=start+step;
+
+    question=makeQuestion(
+      `Trouve le nombre suivant : ${start}, ${start+step}, ${start+2*step}, ${start+3*step}, ?`,
+      answer,
+      [answer+step,answer-1]
+    );
+
+    attempts++;
+  }while(usedGenerated.has(question.q) && attempts<100);
+
+  usedGenerated.add(question.q);
+  return question;
 }
 
 function generateLevelQuestions(){
   const questions=[];
+  const seenThisLevel=new Set();
 
-  for(let i=0;i<questionsParNiveau;i++){
+  while(questions.length<questionsParNiveau){
+    let question;
+
     if(currentGame==="quiz"){
-      questions.push(generateQuizQuestion(level));
+      question=generateQuizQuestion(level);
     }else if(currentGame==="riddle"){
-      questions.push(generateRiddleQuestion());
+      question=generateRiddleQuestion();
     }else{
-      questions.push(generateChallengeQuestion(level));
+      question=generateChallengeQuestion(level);
+    }
+
+    if(!seenThisLevel.has(question.q)){
+      seenThisLevel.add(question.q);
+      questions.push(question);
     }
   }
 
@@ -402,11 +463,15 @@ function startGame(title,gameType){
   score=0;
   level=1;
   answered=false;
+  usedGenerated.clear();
 
   document.getElementById("gameTitle").textContent=title;
   document.getElementById("gameBox").classList.add("active");
   document.getElementById("feedback").textContent="";
   document.getElementById("nextButton").style.display="none";
+
+  if(gameType==="quiz") quizDeck=shuffle(quizFacts);
+  if(gameType==="riddle") riddleDeck=shuffle(riddles);
 
   currentQuestions=generateLevelQuestions();
   showQuestion();
@@ -473,7 +538,6 @@ function checkAnswer(choice){
 
   const nextButton=document.getElementById("nextButton");
   nextButton.style.display="inline-block";
-
   nextButton.textContent=
     currentIndex===questionsParNiveau-1
       ?"PASSER AU NIVEAU SUIVANT 🚀"
@@ -495,11 +559,10 @@ function nextLevel(){
   level++;
   currentIndex=0;
   currentQuestions=generateLevelQuestions();
+  showQuestion();
 
   document.getElementById("feedback").textContent=
     `🔥 Félicitations ! Tu passes au niveau ${level} !`;
-
-  showQuestion();
 }
 
 function closeGame(){
