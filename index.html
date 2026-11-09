@@ -1364,5 +1364,173 @@ function mathNext() {
   }
 }
 </script>
+
+<section id="premium-informatique">
+  <div class="premium">
+    <h2>💻 INFORMATIQUE ET COMPÉTENCES NUMÉRIQUES</h2>
+    <p>Développe tes compétences informatiques à ton rythme.</p>
+
+    <div id="info-intro">
+      <h3>🖥️ Série 1 : Les bases du numérique</h3>
+      <p>20 questions sur l'informatique, Word, Excel, Internet et la sécurité.</p>
+      <button onclick="infoStart()">COMMENCER À APPRENDRE</button>
+    </div>
+
+    <div id="info-game" style="display:none;">
+      <p id="info-progress"></p>
+      <h3 id="info-question"></h3>
+      <div id="info-answers"></div>
+      <div id="info-explanation" style="margin-top:15px;"></div>
+      <button id="info-next" style="display:none;" onclick="infoNext()">CONTINUER</button>
+    </div>
+
+    <div id="info-result" style="display:none;">
+      <h3>🎉 Série terminée !</h3>
+      <p id="info-score"></p>
+      <button onclick="infoStart()">RECOMMENCER LA SÉRIE</button>
+    </div>
+  </div>
+</section>
+
+<style>
+#premium-informatique button {
+  background: linear-gradient(135deg,#245bdb,#7138c8);
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 16px;
+  margin: 6px 4px;
+  cursor: pointer;
+}
+#premium-informatique .info-answer {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #17233d;
+  color: white;
+  border: 1px solid #52617c;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 8px 0;
+}
+#premium-informatique .info-answer:disabled {
+  opacity: 1;
+}
+#premium-informatique .info-correct {
+  background: #176b3a;
+}
+#premium-informatique .info-wrong {
+  background: #8b2929;
+}
+#premium-informatique #info-explanation {
+  background: #17233d;
+  border-left: 4px solid #d4af37;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.6;
+}
+</style>
+
+<script>
+const infoQuestions = [
+  {q:"Que signifie le sigle informatique ?",a:["Information automatique","Internet formaté","Interface mobile"],c:0,e:"Le mot informatique vient de la combinaison des mots information et automatique. Il désigne le traitement automatique de l'information."},
+  {q:"Quel composant est souvent considéré comme le cerveau de l'ordinateur ?",a:["Le clavier","Le processeur","L'écran"],c:1,e:"Le processeur (CPU) exécute les instructions et effectue les opérations principales de l'ordinateur."},
+  {q:"À quoi sert principalement un clavier ?",a:["À saisir du texte","À imprimer des documents","À afficher des images"],c:0,e:"Le clavier est un périphérique d'entrée qui permet de saisir des lettres, des chiffres et des commandes."},
+  {q:"Quel appareil permet d'imprimer un document sur papier ?",a:["Un scanner","Une imprimante","Un routeur"],c:1,e:"L'imprimante est un périphérique de sortie qui produit une version papier d'un document numérique."},
+  {q:"Que signifie le sigle RAM ?",a:["Mémoire vive","Mémoire permanente","Réseau automatique"],c:0,e:"La RAM est la mémoire vive. Elle conserve temporairement les données utilisées par les programmes pendant leur fonctionnement."},
+  {q:"Quel logiciel est principalement utilisé pour rédiger des documents ?",a:["Microsoft Word","Microsoft Excel","Un navigateur Internet"],c:0,e:"Microsoft Word est un logiciel de traitement de texte qui permet de rédiger et mettre en forme des documents."},
+  {q:"Dans Word, quelle commande permet de mettre un texte en caractères gras ?",a:["Ctrl + G","Ctrl + P","Ctrl + S"],c:0,e:"Dans Word en français, Ctrl + G active ou désactive le gras. Le raccourci peut varier selon le logiciel ou la configuration."},
+  {q:"À quoi sert principalement Microsoft Excel ?",a:["À créer des feuilles de calcul","À retoucher des photos","À naviguer sur Internet"],c:0,e:"Excel permet d'organiser des données dans des cellules, d'effectuer des calculs et de créer des tableaux et graphiques."},
+  {q:"Quelle formule permet d'additionner les cellules A1 à A5 dans Excel en français ?",a:["=MOYENNE(A1:A5)","=SOMME(A1:A5)","=TOTAL(A1:A5)"],c:1,e:"La formule =SOMME(A1:A5) additionne les valeurs de toutes les cellules de A1 à A5."},
+  {q:"Dans Excel, une cellule est :",a:["L'intersection d'une ligne et d'une colonne","Un fichier complet","Une page Internet"],c:0,e:"Une cellule est une case de la feuille de calcul située à l'intersection d'une ligne et d'une colonne."},
+  {q:"Qu'est-ce qu'un navigateur Internet ?",a:["Un logiciel pour consulter des sites Web","Un appareil photo","Un système d'impression"],c:0,e:"Un navigateur comme Chrome, Firefox ou Edge permet d'accéder aux pages et services du Web."},
+  {q:"Que signifie l'abréviation URL ?",a:["Une adresse de ressource sur le Web","Un type de clavier","Un logiciel antivirus"],c:0,e:"URL signifie Uniform Resource Locator. C'est l'adresse qui permet de localiser une ressource sur Internet."},
+  {q:"Que signifie HTTPS dans une adresse Web ?",a:["Une connexion Web protégée par chiffrement","Un site forcément gratuit","Un ordinateur très rapide"],c:0,e:"HTTPS utilise le chiffrement TLS pour protéger les échanges entre le navigateur et le site. Cela ne garantit pas à lui seul que le site est honnête."},
+  {q:"Quel est le rôle principal d'un antivirus ?",a:["Détecter et aider à bloquer les logiciels malveillants","Augmenter la taille de l'écran","Créer des tableaux"],c:0,e:"Un antivirus aide à détecter, bloquer et supprimer certains programmes malveillants. Il doit être régulièrement mis à jour."},
+  {q:"Quel mot de passe est généralement le plus sûr ?",a:["123456","bati2026","Une longue phrase unique avec plusieurs types de caractères"],c:2,e:"Un mot de passe long, unique et difficile à deviner est préférable. Un gestionnaire de mots de passe peut aider à les conserver."},
+  {q:"Qu'est-ce que l'hameçonnage (phishing) ?",a:["Une tentative de tromper une personne pour voler ses informations","Une méthode de sauvegarde","Un outil de calcul"],c:0,e:"L'hameçonnage utilise souvent de faux messages ou sites pour pousser une personne à communiquer ses mots de passe ou ses données bancaires."},
+  {q:"Pourquoi faut-il faire des sauvegardes de ses fichiers ?",a:["Pour pouvoir les récupérer en cas de perte","Pour rendre l'écran plus lumineux","Pour supprimer Internet"],c:0,e:"Une sauvegarde permet de récupérer des données après une panne, une suppression accidentelle ou une attaque informatique."},
+  {q:"Que signifie le stockage dans le cloud ?",a:["Le stockage de fichiers sur des serveurs accessibles par Internet","Le stockage uniquement sur une clé USB","L'impression de fichiers"],c:0,e:"Le cloud permet de conserver des données sur des serveurs distants et d'y accéder par Internet, selon les droits et les services disponibles."},
+  {q:"Quelle extension correspond généralement à un document PDF ?",a:[".mp3",".pdf",".jpg"],c:1,e:"L'extension .pdf désigne un fichier au format Portable Document Format, souvent utilisé pour partager des documents."},
+  {q:"Que faut-il faire avant d'ouvrir une pièce jointe inattendue ?",a:["Vérifier l'expéditeur et la légitimité du message","L'ouvrir immédiatement","Transmettre le message à tout le monde"],c:0,e:"Il faut vérifier l'expéditeur, le contexte et le fichier. En cas de doute, ne pas ouvrir la pièce jointe et confirmer par un autre moyen."}
+];
+
+let infoIndex = 0;
+let infoScore = 0;
+let infoAnswered = false;
+
+function infoStart() {
+  infoIndex = 0;
+  infoScore = 0;
+  infoAnswered = false;
+  document.getElementById("info-intro").style.display = "none";
+  document.getElementById("info-result").style.display = "none";
+  document.getElementById("info-game").style.display = "block";
+  infoShow();
+}
+
+function infoShow() {
+  infoAnswered = false;
+  const item = infoQuestions[infoIndex];
+
+  document.getElementById("info-progress").textContent =
+    "Question " + (infoIndex + 1) + " / " + infoQuestions.length;
+  document.getElementById("info-question").textContent = item.q;
+  document.getElementById("info-explanation").textContent = "";
+  document.getElementById("info-next").style.display = "none";
+
+  const area = document.getElementById("info-answers");
+  area.innerHTML = "";
+
+  item.a.forEach((answer, i) => {
+    const button = document.createElement("button");
+    button.className = "info-answer";
+    button.textContent = answer;
+    button.onclick = () => infoAnswer(i);
+    area.appendChild(button);
+  });
+}
+
+function infoAnswer(choice) {
+  if (infoAnswered) return;
+  infoAnswered = true;
+
+  const item = infoQuestions[infoIndex];
+  const buttons = document.querySelectorAll("#info-answers button");
+
+  buttons.forEach((button, i) => {
+    button.disabled = true;
+    if (i === item.c) button.classList.add("info-correct");
+    else if (i === choice) button.classList.add("info-wrong");
+  });
+
+  if (choice === item.c) {
+    infoScore++;
+    document.getElementById("info-explanation").textContent =
+      "✅ Bonne réponse ! " + item.e;
+  } else {
+    document.getElementById("info-explanation").textContent =
+      "❌ Bonne réponse : " + item.a[item.c] + ". " + item.e;
+  }
+
+  document.getElementById("info-next").style.display = "inline-block";
+  document.getElementById("info-next").textContent =
+    infoIndex === infoQuestions.length - 1 ? "VOIR MON RÉSULTAT" : "CONTINUER";
+}
+
+function infoNext() {
+  if (!infoAnswered) return;
+  infoIndex++;
+
+  if (infoIndex < infoQuestions.length) {
+    infoShow();
+  } else {
+    document.getElementById("info-game").style.display = "none";
+    document.getElementById("info-result").style.display = "block";
+    document.getElementById("info-score").textContent =
+      "Tu as obtenu " + infoScore + " bonne(s) réponse(s) sur 20. Relis les explications et recommence pour progresser.";
+  }
+}
+  </script>
 </body>
 </html> 
