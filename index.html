@@ -612,5 +612,150 @@ function closeGame(){
   currentGame="";
   }
 </script>
+
+<section id="premium-demo">
+  <div class="premium">
+    <h2>🎁 ESSAI GRATUIT – BATI GAMES PREMIUM</h2>
+    <p>Teste tes connaissances avec ces 5 questions gratuites.</p>
+
+    <div id="premium-question-area">
+      <p id="premium-progress">Question 1/5</p>
+      <h3 id="premium-question"></h3>
+      <div id="premium-answers"></div>
+      <p id="premium-feedback"></p>
+      <button id="premium-next" style="display:none;">
+        QUESTION SUIVANTE
+      </button>
+    </div>
+
+    <div id="premium-result" style="display:none;">
+      <h3>🎉 Essai terminé !</h3>
+      <p id="premium-score"></p>
+      <button onclick="restartPremiumDemo()">RECOMMENCER</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const premiumQuestions = [
+  {
+    q: "Quelle est la capitale politique de la Côte d'Ivoire ?",
+    a: ["Abidjan", "Yamoussoukro", "Bouaké"],
+    c: 1,
+    e: "Yamoussoukro est la capitale politique de la Côte d'Ivoire."
+  },
+  {
+    q: "Combien de membres permanents compte le Conseil de sécurité de l'ONU ?",
+    a: ["5", "10", "15"],
+    c: 0,
+    e: "Le Conseil de sécurité compte cinq membres permanents."
+  },
+  {
+    q: "Quel est le plus grand océan du monde ?",
+    a: ["Atlantique", "Indien", "Pacifique"],
+    c: 2,
+    e: "L'océan Pacifique est le plus vaste du monde."
+  },
+  {
+    q: "Combien font 15 × 8 ?",
+    a: ["100", "120", "130"],
+    c: 1,
+    e: "15 multiplié par 8 donne 120."
+  },
+  {
+    q: "Quelle institution organise les élections présidentielles en Côte d'Ivoire ?",
+    a: ["La CEI", "La BCEAO", "L'ONU"],
+    c: 0,
+    e: "La Commission électorale indépendante (CEI) organise les élections en Côte d'Ivoire."
+  }
+];
+
+let premiumIndex = 0;
+let premiumPoints = 0;
+let premiumAnswered = false;
+
+function showPremiumQuestion() {
+  premiumAnswered = false;
+  const item = premiumQuestions[premiumIndex];
+
+  document.getElementById("premium-progress").textContent =
+    `Question ${premiumIndex + 1}/5`;
+
+  document.getElementById("premium-question").textContent = item.q;
+  document.getElementById("premium-feedback").textContent = "";
+  document.getElementById("premium-next").style.display = "none";
+
+  const area = document.getElementById("premium-answers");
+  area.innerHTML = "";
+
+  item.a.forEach((answer, index) => {
+    const button = document.createElement("button");
+    button.textContent = answer;
+    button.style.margin = "6px";
+    button.style.padding = "12px";
+    button.style.cursor = "pointer";
+    button.onclick = () => answerPremiumQuestion(index);
+    area.appendChild(button);
+  });
+}
+
+function answerPremiumQuestion(choice) {
+  if (premiumAnswered) return;
+  premiumAnswered = true;
+
+  const item = premiumQuestions[premiumIndex];
+  const buttons = document.querySelectorAll("#premium-answers button");
+
+  buttons.forEach((button, index) => {
+    button.disabled = true;
+    if (index === item.c) {
+      button.style.background = "#16803c";
+      button.style.color = "white";
+    } else if (index === choice) {
+      button.style.background = "#b42318";
+      button.style.color = "white";
+    }
+  });
+
+  if (choice === item.c) {
+    premiumPoints++;
+    document.getElementById("premium-feedback").textContent =
+      "✅ Bonne réponse ! " + item.e;
+  } else {
+    document.getElementById("premium-feedback").textContent =
+      "❌ Mauvaise réponse. " + item.e;
+  }
+
+  const next = document.getElementById("premium-next");
+  next.textContent =
+    premiumIndex === 4 ? "VOIR MON RÉSULTAT" : "QUESTION SUIVANTE";
+  next.style.display = "inline-block";
+}
+
+document.getElementById("premium-next").onclick = function () {
+  if (!premiumAnswered) return;
+
+  premiumIndex++;
+
+  if (premiumIndex < premiumQuestions.length) {
+    showPremiumQuestion();
+  } else {
+    document.getElementById("premium-question-area").style.display = "none";
+    document.getElementById("premium-result").style.display = "block";
+    document.getElementById("premium-score").textContent =
+      `Ton résultat : ${premiumPoints}/5 bonnes réponses.`;
+  }
+};
+
+function restartPremiumDemo() {
+  premiumIndex = 0;
+  premiumPoints = 0;
+  document.getElementById("premium-question-area").style.display = "block";
+  document.getElementById("premium-result").style.display = "none";
+  showPremiumQuestion();
+}
+
+showPremiumQuestion();
+  </script>
 </body>
 </html> 
