@@ -2386,5 +2386,405 @@ function batiSecTerminer() {
 }
 
         </script>
+  
+<!-- BATI GAMES PREMIUM : SANTE ET PROFESSIONS TECHNIQUES -->
+
+<style>
+#bati-sante {
+  background: #171725;
+  color: white;
+  max-width: 850px;
+  margin: 25px auto;
+  padding: 22px 15px;
+  border: 1px solid #d4af37;
+  border-radius: 15px;
+  font-family: Arial, sans-serif;
+}
+#bati-sante h2, #bati-sante h3 {
+  color: #d4af37;
+  text-align: center;
+}
+#bati-sante .sante-intro {
+  text-align: center;
+  line-height: 1.7;
+}
+#bati-sante button {
+  background: #d4af37;
+  color: #171717;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 8px 3px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#bati-sante .sante-card {
+  background: #25253a;
+  padding: 17px;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+#bati-sante .sante-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #35354c;
+  color: white;
+  border: 1px solid #55556b;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 9px 0;
+}
+#bati-sante .sante-option.correct {
+  background: #176b42;
+}
+#bati-sante .sante-option.incorrect {
+  background: #842e38;
+}
+#bati-sante .sante-option:disabled {
+  opacity: 1;
+}
+#bati-sante .sante-explication {
+  background: #202d39;
+  border-left: 4px solid #d4af37;
+  padding: 13px;
+  border-radius: 7px;
+  line-height: 1.6;
+  margin-top: 14px;
+}
+#bati-sante .sante-cache {
+  display: none;
+}
+#bati-sante .sante-progression {
+  color: #d4af37;
+  font-weight: bold;
+}
+</style>
+
+<section id="bati-sante">
+  <h2>🏥 SANTÉ ET PROFESSIONS TECHNIQUES</h2>
+
+  <div class="sante-intro">
+    <p>Développe tes connaissances scientifiques et professionnelles avec BATI GAMES PREMIUM.</p>
+    <p>🩺 Santé • Sciences • Hygiène • Sécurité • Métiers techniques</p>
+    <p>📚 Corrections détaillées et apprentissage sans chronomètre.</p>
+    <button onclick="batiSanteDemarrer()">COMMENCER À APPRENDRE</button>
+  </div>
+
+  <div id="bati-sante-jeu" class="sante-cache">
+    <div class="sante-progression" id="bati-sante-progression"></div>
+    <div class="sante-card">
+      <h3 id="bati-sante-theme"></h3>
+      <h3 id="bati-sante-question"></h3>
+      <div id="bati-sante-options"></div>
+      <div id="bati-sante-explication" class="sante-explication sante-cache"></div>
+      <button id="bati-sante-suivant" class="sante-cache" onclick="batiSanteSuivant()">QUESTION SUIVANTE</button>
+    </div>
+  </div>
+
+  <div id="bati-sante-fin" class="sante-cache">
+    <h3>🎉 SÉRIE TERMINÉE !</h3>
+    <p id="bati-sante-bilan" style="text-align:center;"></p>
+    <button onclick="batiSanteDemarrer()">RECOMMENCER</button>
+  </div>
+</section>
+
+<script>
+const batiSanteBanque = [
+{
+theme:"Anatomie",
+q:"Quel organe assure principalement la circulation du sang ?",
+o:["Le foie","Le cœur","L'estomac","Les reins"],
+a:1,
+e:"Le cœur est un muscle qui propulse le sang dans les vaisseaux sanguins."
+},
+{
+theme:"Anatomie",
+q:"Quel organe permet principalement les échanges gazeux lors de la respiration ?",
+o:["Les poumons","Le cerveau","Le pancréas","L'estomac"],
+a:0,
+e:"Les poumons permettent notamment l'entrée de l'oxygène dans le sang et l'élimination du dioxyde de carbone."
+},
+{
+theme:"Biologie",
+q:"Combien de chromosomes possède normalement une cellule humaine somatique ?",
+o:["23","44","46","48"],
+a:2,
+e:"La plupart des cellules humaines possèdent 46 chromosomes, organisés en 23 paires."
+},
+{
+theme:"Hygiène",
+q:"Quel geste contribue le plus directement à limiter la transmission de nombreux microbes ?",
+o:["Se laver correctement les mains","Partager les serviettes","Éviter de nettoyer les surfaces","Toucher son visage constamment"],
+a:0,
+e:"Le lavage des mains avec de l'eau et du savon aide à éliminer de nombreux microbes et à réduire leur transmission."
+},
+{
+theme:"Microbiologie",
+q:"Quel organisme est responsable de la grippe ?",
+o:["Une bactérie","Un virus","Un champignon","Un parasite uniquement"],
+a:1,
+e:"La grippe est une maladie respiratoire causée par des virus influenza."
+},
+{
+theme:"Sciences",
+q:"Quelle est la température de référence approximative du corps humain en bonne santé ?",
+o:["25 °C","30 °C","37 °C","42 °C"],
+a:2,
+e:"37 °C est une valeur de référence courante. La température normale peut varier selon les personnes, les moments et la méthode de mesure."
+},
+{
+theme:"Secourisme",
+q:"Face à une personne inconsciente qui ne réagit pas, quelle est la première démarche ?",
+o:["Lui donner à boire","Vérifier la sécurité des lieux, évaluer son état et alerter les secours","La faire marcher","La laisser seule"],
+a:1,
+e:"Il faut sécuriser les lieux, vérifier la réaction de la personne et appeler les secours. Suis les instructions des professionnels."
+},
+{
+theme:"Prévention",
+q:"Pourquoi est-il important de porter des équipements de protection adaptés au travail ?",
+o:["Pour décorer la tenue","Pour réduire les risques d'accident et d'exposition","Pour remplacer la formation","Pour éviter les contrôles"],
+a:1,
+e:"Les équipements de protection individuelle contribuent à réduire certains risques professionnels lorsqu'ils sont adaptés et correctement utilisés."
+},
+{
+theme:"Anatomie",
+q:"Quel organe est principalement responsable du filtrage du sang et de la production d'urine ?",
+o:["Les reins","Les poumons","Le cœur","La peau"],
+a:0,
+e:"Les reins filtrent le sang et participent à la production de l'urine."
+},
+{
+theme:"Nutrition",
+q:"Quel nutriment constitue une source importante d'énergie pour l'organisme ?",
+o:["Les glucides","L'eau uniquement","Les vitamines uniquement","Les sels minéraux uniquement"],
+a:0,
+e:"Les glucides constituent une source importante d'énergie pour l'organisme."
+},
+{
+theme:"Sciences",
+q:"Quelle unité mesure la fréquence électrique ?",
+o:["Le volt","L'ampère","Le hertz","Le watt"],
+a:2,
+e:"Le hertz (Hz) mesure le nombre de cycles par seconde d'un phénomène périodique."
+},
+{
+theme:"Électricité",
+q:"Quel appareil protège généralement un circuit contre les surintensités ?",
+o:["Un disjoncteur","Une ampoule","Une prise simple","Un interrupteur décoratif"],
+a:0,
+e:"Un disjoncteur est conçu pour interrompre le courant lorsqu'une surintensité est détectée, selon ses caractéristiques."
+},
+{
+theme:"Informatique",
+q:"Que signifie le sigle CPU ?",
+o:["Central Processing Unit","Computer Personal Utility","Control Power Unit","Central Program User"],
+a:0,
+e:"CPU signifie Central Processing Unit, ou unité centrale de traitement. Il exécute les instructions d'un ordinateur."
+},
+{
+theme:"Mathématiques",
+q:"Combien font 15 % de 200 ?",
+o:["15","20","30","45"],
+a:2,
+e:"15 % de 200 = 0,15 × 200 = 30."
+},
+{
+theme:"Logique",
+q:"Complète la suite : 3, 6, 9, 12, ...",
+o:["13","14","15","18"],
+a:2,
+e:"La suite augmente de 3 à chaque étape. Après 12 vient 15."
+},
+{
+theme:"Hygiène",
+q:"Quel est l'objectif principal de la stérilisation d'un instrument médical ?",
+o:["Le parfumer","Détruire toutes les formes de micro-organismes viables","Changer sa couleur","Le refroidir"],
+a:1,
+e:"La stérilisation vise à éliminer toutes les formes de micro-organismes viables, selon un procédé validé."
+},
+{
+theme:"Laboratoire",
+q:"Pourquoi faut-il identifier correctement un échantillon de laboratoire ?",
+o:["Pour gagner de la place","Pour éviter les erreurs d'identification et de résultats","Pour changer sa composition","Pour accélérer sa couleur"],
+a:1,
+e:"Une identification correcte permet de relier le résultat au bon patient ou à la bonne origine de l'échantillon."
+},
+{
+theme:"Environnement",
+q:"Quel geste contribue à une meilleure gestion des déchets ?",
+o:["Tout mélanger","Jeter les déchets dans la rue","Trier les déchets selon les consignes locales","Brûler tous les déchets"],
+a:2,
+e:"Le tri selon les règles locales facilite le traitement adapté des différents types de déchets."
+},
+{
+theme:"Santé publique",
+q:"Quel est l'objectif principal de la vaccination ?",
+o:["Prévenir certaines maladies infectieuses","Remplacer l'alimentation","Guérir toutes les maladies","Remplacer le sommeil"],
+a:0,
+e:"La vaccination prépare le système immunitaire à reconnaître certains agents infectieux et aide à prévenir les maladies ciblées."
+},
+{
+theme:"Communication",
+q:"Pourquoi la confidentialité est-elle importante dans les professions de santé ?",
+o:["Pour protéger les informations personnelles des patients","Pour publier les dossiers","Pour partager les informations sans autorisation","Pour éviter toute communication professionnelle"],
+a:0,
+e:"La confidentialité protège la vie privée et les informations personnelles des patients, conformément aux règles applicables."
+},
+{
+theme:"Technique",
+q:"Quel outil sert à mesurer une longueur avec précision dans de nombreux travaux techniques ?",
+o:["Un thermomètre","Un pied à coulisse","Un stéthoscope","Une boussole"],
+a:1,
+e:"Le pied à coulisse permet de mesurer des dimensions extérieures, intérieures et parfois des profondeurs."
+},
+{
+theme:"Sécurité au travail",
+q:"Que faut-il faire avant d'intervenir sur une installation électrique dangereuse ?",
+o:["Toucher les fils pour tester","Appliquer la procédure de mise en sécurité et faire intervenir une personne habilitée","Verser de l'eau","Travailler sans protection"],
+a:1,
+e:"Une intervention électrique exige une procédure adaptée de mise en sécurité et du personnel compétent et habilité."
+},
+{
+theme:"Biologie",
+q:"Quel est le rôle principal des globules rouges ?",
+o:["Transporter principalement l'oxygène","Produire les hormones","Digérer les aliments","Filtrer l'urine"],
+a:0,
+e:"Les globules rouges contiennent de l'hémoglobine, qui transporte principalement l'oxygène dans le sang."
+},
+{
+theme:"Sciences",
+q:"Quelle est l'unité de mesure de la pression dans le système international ?",
+o:["Le joule","Le pascal","Le mètre","Le litre"],
+a:1,
+e:"Le pascal (Pa) est l'unité de pression du système international."
+},
+{
+theme:"Professionnel",
+q:"Pourquoi faut-il suivre les protocoles et procédures dans un métier technique ?",
+o:["Pour éviter toute vérification","Pour travailler de façon cohérente et réduire les risques","Pour improviser systématiquement","Pour supprimer les responsabilités"],
+a:1,
+e:"Les protocoles et procédures contribuent à la qualité, à la sécurité et à la traçabilité du travail."
+}
+];
+
+let batiSanteSerie = [];
+let batiSanteIndex = 0;
+let batiSanteScore = 0;
+let batiSanteTotal = 0;
+
+function batiSanteMelanger(tableau) {
+  const copie = [...tableau];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
+}
+
+function batiSanteDemarrer() {
+  document.getElementById("bati-sante-fin").classList.add("sante-cache");
+  document.getElementById("bati-sante-jeu").classList.remove("sante-cache");
+
+  batiSanteSerie = batiSanteMelanger(batiSanteBanque);
+  batiSanteIndex = 0;
+  batiSanteScore = 0;
+
+  batiSanteAfficher();
+}
+
+function batiSanteAfficher() {
+  if (batiSanteIndex >= batiSanteSerie.length) {
+    batiSanteTerminer();
+    return;
+  }
+
+  const question = batiSanteSerie[batiSanteIndex];
+
+  document.getElementById("bati-sante-progression").textContent =
+    "Question " + (batiSanteIndex + 1) +
+    " sur " + batiSanteSerie.length +
+    " • Bonnes réponses : " + batiSanteScore;
+
+  document.getElementById("bati-sante-theme").textContent =
+    "📚 " + question.theme;
+
+  document.getElementById("bati-sante-question").textContent = question.q;
+
+  const zone = document.getElementById("bati-sante-options");
+  zone.innerHTML = "";
+
+  question.o.forEach((option, index) => {
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = "sante-option";
+    bouton.textContent = String.fromCharCode(65 + index) + ". " + option;
+    bouton.onclick = () => batiSanteRepondre(index);
+    zone.appendChild(bouton);
+  });
+
+  document.getElementById("bati-sante-explication").classList.add("sante-cache");
+  document.getElementById("bati-sante-suivant").classList.add("sante-cache");
+}
+
+function batiSanteRepondre(choix) {
+  const question = batiSanteSerie[batiSanteIndex];
+  const boutons = document.querySelectorAll(
+    "#bati-sante-options .sante-option"
+  );
+
+  if (boutons.length === 0 || boutons[0].disabled) return;
+
+  boutons.forEach((bouton, index) => {
+    bouton.disabled = true;
+
+    if (index === question.a) {
+      bouton.classList.add("correct");
+    } else if (index === choix) {
+      bouton.classList.add("incorrect");
+    }
+  });
+
+  batiSanteTotal++;
+
+  if (choix === question.a) {
+    batiSanteScore++;
+  }
+
+  const explication = document.getElementById("bati-sante-explication");
+  explication.textContent =
+    (choix === question.a ? "✅ Bonne réponse ! " : "❌ Mauvaise réponse. ") +
+    question.e;
+  explication.classList.remove("sante-cache");
+
+  document.getElementById("bati-sante-progression").textContent =
+    "Question " + (batiSanteIndex + 1) +
+    " sur " + batiSanteSerie.length +
+    " • Bonnes réponses : " + batiSanteScore;
+
+  document.getElementById("bati-sante-suivant").classList.remove("sante-cache");
+}
+
+function batiSanteSuivant() {
+  batiSanteIndex++;
+
+  if (batiSanteIndex >= batiSanteSerie.length) {
+    batiSanteTerminer();
+  } else {
+    batiSanteAfficher();
+  }
+}
+
+function batiSanteTerminer() {
+  document.getElementById("bati-sante-jeu").classList.add("sante-cache");
+  document.getElementById("bati-sante-fin").classList.remove("sante-cache");
+
+  document.getElementById("bati-sante-bilan").textContent =
+    "Tu as obtenu " + batiSanteScore +
+    " bonne(s) réponse(s) sur " + batiSanteSerie.length +
+    ". Tu as répondu à " + batiSanteTotal +
+    " question(s) au total. Continue à apprendre !";
+}
+    </script>
   </body>
 </html> 
