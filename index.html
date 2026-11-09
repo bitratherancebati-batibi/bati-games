@@ -1942,5 +1942,449 @@ function batiMondeTerminerSerie() {
 }
 
   </script>
+  
+<!-- MODULE PREMIUM : POLICE, GENDARMERIE ET ARMEE -->
+
+<style>
+#bati-securite {
+  background: #171725;
+  color: white;
+  max-width: 850px;
+  margin: 25px auto;
+  padding: 22px 15px;
+  border: 1px solid #d4af37;
+  border-radius: 15px;
+  font-family: Arial, sans-serif;
+}
+#bati-securite h2,
+#bati-securite h3 {
+  color: #d4af37;
+  text-align: center;
+}
+#bati-securite .sec-intro {
+  text-align: center;
+  line-height: 1.7;
+}
+#bati-securite button {
+  background: #d4af37;
+  color: #171717;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 8px 3px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#bati-securite .sec-card {
+  background: #25253a;
+  padding: 17px;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+#bati-securite .sec-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #35354c;
+  color: white;
+  border: 1px solid #55556b;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 9px 0;
+}
+#bati-securite .sec-option.correct {
+  background: #176b42;
+}
+#bati-securite .sec-option.incorrect {
+  background: #842e38;
+}
+#bati-securite .sec-option:disabled {
+  opacity: 1;
+}
+#bati-securite .sec-explication {
+  background: #202d39;
+  border-left: 4px solid #d4af37;
+  padding: 13px;
+  border-radius: 7px;
+  line-height: 1.6;
+  margin-top: 14px;
+}
+#bati-securite .sec-cache {
+  display: none;
+}
+#bati-securite .sec-progression {
+  color: #d4af37;
+  font-weight: bold;
+}
+</style>
+
+<section id="bati-securite">
+
+  <h2>👮 POLICE, GENDARMERIE ET ARMÉE</h2>
+
+  <div class="sec-intro">
+    <p>Prépare-toi aux concours des forces de sécurité avec BATI GAMES PREMIUM.</p>
+    <p>🛡️ Culture civique • Discipline • Logique • Institutions • Déontologie</p>
+    <p>📚 Corrections détaillées et apprentissage sans chronomètre.</p>
+    <button onclick="batiSecDemarrer()">COMMENCER À APPRENDRE</button>
+  </div>
+
+  <div id="bati-sec-jeu" class="sec-cache">
+    <div class="sec-progression" id="bati-sec-progression"></div>
+
+    <div class="sec-card">
+      <h3 id="bati-sec-theme"></h3>
+      <h3 id="bati-sec-question"></h3>
+      <div id="bati-sec-options"></div>
+
+      <div id="bati-sec-explication"
+           class="sec-explication sec-cache"></div>
+
+      <button id="bati-sec-suivant"
+              class="sec-cache"
+              onclick="batiSecSuivant()">
+        QUESTION SUIVANTE
+      </button>
+    </div>
+  </div>
+
+  <div id="bati-sec-fin" class="sec-cache">
+    <h3>🎉 SÉRIE TERMINÉE !</h3>
+    <p id="bati-sec-bilan" style="text-align:center;"></p>
+    <button onclick="batiSecDemarrer()">RECOMMENCER</button>
+  </div>
+
+</section>
+
+<script>
+const batiSecBanque = [
+
+{
+theme:"Police",
+q:"Quelle est la mission générale de la police ?",
+o:["Organiser les élections","Protéger les personnes et les biens et contribuer à la sécurité publique","Diriger les écoles","Gérer les hôpitaux"],
+a:1,
+e:"La police contribue à la sécurité publique, à la protection des personnes et des biens et à l'application des lois."
+},
+
+{
+theme:"Gendarmerie",
+q:"La gendarmerie est généralement une force de sécurité à statut :",
+o:["Uniquement sportif","Militaire","Commercial","Scolaire"],
+a:1,
+e:"Dans de nombreux pays, la gendarmerie est une force à statut militaire chargée notamment de missions de sécurité et de police."
+},
+
+{
+theme:"Armée",
+q:"Quelle est la mission fondamentale d'une armée nationale ?",
+o:["Vendre des produits","Défendre le territoire et contribuer à la défense nationale","Organiser les examens scolaires","Gérer les banques"],
+a:1,
+e:"L'armée contribue à la défense du territoire, à la souveraineté et à la protection de la nation."
+},
+
+{
+theme:"Déontologie",
+q:"Que signifie faire preuve d'intégrité dans un service public ?",
+o:["Accepter les pots-de-vin","Agir avec honnêteté et respecter les règles","Favoriser ses amis","Cacher les fautes"],
+a:1,
+e:"L'intégrité consiste à agir honnêtement, sans corruption ni abus de pouvoir."
+},
+
+{
+theme:"Droits humains",
+q:"Les droits humains doivent être respectés :",
+o:["Uniquement par les citoyens","Par tous, y compris les agents publics","Seulement pendant les élections","Uniquement dans les écoles"],
+a:1,
+e:"Les droits humains sont universels. Les agents de sécurité doivent également les respecter dans l'exercice de leurs fonctions."
+},
+
+{
+theme:"Discipline",
+q:"Que signifie respecter la hiérarchie professionnelle ?",
+o:["Refuser toute instruction","Respecter les responsabilités et les voies officielles de commandement","Faire ce que l'on veut","Ignorer les règlements"],
+a:1,
+e:"La hiérarchie organise les responsabilités et le fonctionnement du service. Un ordre manifestement illégal ne doit toutefois pas être exécuté."
+},
+
+{
+theme:"Institutions",
+q:"Quel est le rôle principal d'une Constitution ?",
+o:["Fixer les prix des aliments","Définir l'organisation des pouvoirs publics et les principes fondamentaux de l'État","Remplacer toutes les lois","Organiser uniquement le sport"],
+a:1,
+e:"La Constitution est le texte fondamental qui organise les institutions et établit les principes essentiels de l'État."
+},
+
+{
+theme:"Logique",
+q:"Complète cette suite : 2, 4, 6, 8, ...",
+o:["9","10","12","14"],
+a:1,
+e:"La suite augmente de 2 à chaque étape. Après 8 vient donc 10."
+},
+
+{
+theme:"Logique",
+q:"Un agent parcourt 5 kilomètres en une heure. Quelle distance parcourt-il en 3 heures à la même vitesse ?",
+o:["8 km","10 km","15 km","20 km"],
+a:2,
+e:"5 kilomètres × 3 heures = 15 kilomètres."
+},
+
+{
+theme:"Civisme",
+q:"Qu'est-ce que le civisme ?",
+o:["Le refus des lois","Le respect des règles de vie collective et des devoirs du citoyen","La violence","Le refus de participer à la société"],
+a:1,
+e:"Le civisme désigne le respect des règles communes et la participation responsable à la vie de la société."
+},
+
+{
+theme:"Déontologie",
+q:"Un agent découvre un acte de corruption dans son service. Quelle attitude est appropriée ?",
+o:["Participer à l'acte","Ignorer systématiquement les faits","Utiliser les voies de signalement prévues","Demander une récompense"],
+a:2,
+e:"Il doit signaler les faits par les voies officielles appropriées et respecter les procédures."
+},
+
+{
+theme:"Sécurité publique",
+q:"Face à une situation d'urgence, quelle attitude est prioritaire ?",
+o:["Agir sans réfléchir","Évaluer le danger et protéger les personnes","Créer une panique","Diffuser des rumeurs"],
+a:1,
+e:"Il faut évaluer la situation, protéger les personnes et alerter les services compétents."
+},
+
+{
+theme:"Secourisme",
+q:"Devant une personne inconsciente qui ne réagit pas, quelle est la première démarche ?",
+o:["Lui donner immédiatement à boire","Vérifier la sécurité des lieux et évaluer son état, puis alerter les secours","La laisser seule","La faire courir"],
+a:1,
+e:"Il faut d'abord vérifier que les lieux sont sûrs, évaluer la réaction de la personne et appeler les secours. Suivre ensuite les consignes des professionnels."
+},
+
+{
+theme:"Logique",
+q:"Quel nombre complète cette suite : 5, 10, 15, 20, ... ?",
+o:["22","24","25","30"],
+a:2,
+e:"Chaque nombre augmente de 5. Le nombre suivant est 25."
+},
+
+{
+theme:"Institutions",
+q:"Dans un État de droit, les autorités doivent :",
+o:["Agir au-dessus des lois","Respecter la Constitution et les lois","Ignorer les décisions de justice","Supprimer les droits des citoyens"],
+a:1,
+e:"Dans un État de droit, les autorités publiques sont elles aussi soumises au droit."
+},
+
+{
+theme:"Communication",
+q:"Lors d'une intervention, une communication professionnelle doit être :",
+o:["Agressive et insultante","Claire, calme et respectueuse","Confuse et menaçante","Toujours provocatrice"],
+a:1,
+e:"Une communication calme et claire facilite la compréhension et peut contribuer à éviter l'escalade d'un conflit."
+},
+
+{
+theme:"Déontologie",
+q:"Pourquoi la confidentialité est-elle importante dans les forces de sécurité ?",
+o:["Pour vendre les informations","Pour protéger les informations sensibles et la vie privée","Pour cacher toute infraction","Pour éviter le travail"],
+a:1,
+e:"La confidentialité protège les informations sensibles, les enquêtes et les personnes concernées."
+},
+
+{
+theme:"Logique",
+q:"Un groupe compte 40 personnes. 10 sont absentes. Combien sont présentes ?",
+o:["20","25","30","35"],
+a:2,
+e:"40 - 10 = 30 personnes présentes."
+},
+
+{
+theme:"Discipline",
+q:"Que doit faire un candidat lorsqu'il reçoit une consigne pendant une épreuve ?",
+o:["Lire attentivement et respecter les consignes","Ignorer les consignes","Copier sur son voisin","Quitter la salle sans autorisation"],
+a:0,
+e:"Le respect des consignes permet le bon déroulement de l'épreuve et garantit l'équité entre les candidats."
+},
+
+{
+theme:"Sécurité publique",
+q:"Pourquoi faut-il rédiger un rapport après une intervention lorsque la procédure le prévoit ?",
+o:["Pour inventer des faits","Pour conserver une trace précise des événements","Pour éviter toute responsabilité","Pour remplacer la loi"],
+a:1,
+e:"Un rapport permet de documenter les faits, les actions réalisées et les éléments utiles au suivi de l'intervention."
+},
+
+{
+theme:"Culture générale",
+q:"Quelle organisation internationale a pour objectif principal de maintenir la paix et la sécurité internationales ?",
+o:["ONU","FIFA","UNESCO uniquement","OPEP"],
+a:0,
+e:"L'Organisation des Nations unies a notamment pour objectif de maintenir la paix et la sécurité internationales."
+},
+
+{
+theme:"Logique",
+q:"Si 3 agents effectuent une tâche en 6 heures, combien d'heures mettrait un seul agent au même rythme, en supposant une répartition identique du travail ?",
+o:["2 heures","6 heures","12 heures","18 heures"],
+a:3,
+e:"Le travail représente 3 × 6 = 18 heures-agent. Un seul agent mettrait donc 18 heures, selon cette hypothèse."
+},
+
+{
+theme:"Déontologie",
+q:"Un agent doit-il utiliser son uniforme pour intimider quelqu'un dans une affaire personnelle ?",
+o:["Oui, toujours","Non, jamais","Seulement la nuit","Seulement avec des amis"],
+a:1,
+e:"L'uniforme représente l'autorité publique. Il ne doit pas être utilisé à des fins personnelles ou d'intimidation."
+},
+
+{
+theme:"Institutions",
+q:"Quel pouvoir est généralement chargé de rendre la justice ?",
+o:["Le pouvoir judiciaire","Le pouvoir commercial","Le pouvoir sportif","Le pouvoir médiatique"],
+a:0,
+e:"Le pouvoir judiciaire est chargé de rendre la justice, selon l'organisation constitutionnelle de chaque pays."
+},
+
+{
+theme:"Citoyenneté",
+q:"Quel comportement contribue à la paix sociale ?",
+o:["La violence","La discrimination","Le dialogue et le respect des autres","La propagation de fausses informations"],
+a:2,
+e:"Le dialogue, la tolérance et le respect mutuel contribuent à la cohésion sociale."
+}
+
+];
+
+let batiSecSerie = [];
+let batiSecIndex = 0;
+let batiSecScore = 0;
+let batiSecTotal = 0;
+
+function batiSecMelanger(tableau) {
+  const copie = [...tableau];
+
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+
+  return copie;
+}
+
+function batiSecDemarrer() {
+  document.getElementById("bati-sec-fin").classList.add("sec-cache");
+  document.getElementById("bati-sec-jeu").classList.remove("sec-cache");
+
+  batiSecSerie = batiSecMelanger(batiSecBanque);
+  batiSecIndex = 0;
+  batiSecScore = 0;
+
+  batiSecAfficher();
+}
+
+function batiSecAfficher() {
+  if (batiSecIndex >= batiSecSerie.length) {
+    batiSecTerminer();
+    return;
+  }
+
+  const question = batiSecSerie[batiSecIndex];
+
+  document.getElementById("bati-sec-progression").textContent =
+    "Question " + (batiSecIndex + 1) +
+    " sur " + batiSecSerie.length +
+    " • Bonnes réponses : " + batiSecScore;
+
+  document.getElementById("bati-sec-theme").textContent =
+    "📚 " + question.theme;
+
+  document.getElementById("bati-sec-question").textContent =
+    question.q;
+
+  const zone = document.getElementById("bati-sec-options");
+  zone.innerHTML = "";
+
+  question.o.forEach((option, index) => {
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = "sec-option";
+    bouton.textContent = String.fromCharCode(65 + index) + ". " + option;
+    bouton.onclick = () => batiSecRepondre(index);
+    zone.appendChild(bouton);
+  });
+
+  document.getElementById("bati-sec-explication").classList.add("sec-cache");
+  document.getElementById("bati-sec-suivant").classList.add("sec-cache");
+}
+
+function batiSecRepondre(choix) {
+  const question = batiSecSerie[batiSecIndex];
+  const boutons = document.querySelectorAll(
+    "#bati-sec-options .sec-option"
+  );
+
+  if (boutons.length === 0 || boutons[0].disabled) return;
+
+  boutons.forEach((bouton, index) => {
+    bouton.disabled = true;
+
+    if (index === question.a) {
+      bouton.classList.add("correct");
+    } else if (index === choix) {
+      bouton.classList.add("incorrect");
+    }
+  });
+
+  batiSecTotal++;
+
+  if (choix === question.a) {
+    batiSecScore++;
+  }
+
+  const explication = document.getElementById("bati-sec-explication");
+
+  explication.textContent =
+    (choix === question.a
+      ? "✅ Bonne réponse ! "
+      : "❌ Mauvaise réponse. ") + question.e;
+
+  explication.classList.remove("sec-cache");
+
+  document.getElementById("bati-sec-progression").textContent =
+    "Question " + (batiSecIndex + 1) +
+    " sur " + batiSecSerie.length +
+    " • Bonnes réponses : " + batiSecScore;
+
+  document.getElementById("bati-sec-suivant").classList.remove("sec-cache");
+}
+
+function batiSecSuivant() {
+  batiSecIndex++;
+
+  if (batiSecIndex >= batiSecSerie.length) {
+    batiSecTerminer();
+  } else {
+    batiSecAfficher();
+  }
+}
+
+function batiSecTerminer() {
+  document.getElementById("bati-sec-jeu").classList.add("sec-cache");
+  document.getElementById("bati-sec-fin").classList.remove("sec-cache");
+
+  document.getElementById("bati-sec-bilan").textContent =
+    "Tu as obtenu " + batiSecScore +
+    " bonne(s) réponse(s) sur " + batiSecSerie.length +
+    ". Tu as répondu à " + batiSecTotal +
+    " question(s) au total. Continue à apprendre !";
+}
+
+        </script>
   </body>
 </html> 
