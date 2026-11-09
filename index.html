@@ -757,5 +757,276 @@ function restartPremiumDemo() {
 
 showPremiumQuestion();
   </script>
+<section id="formation-fonction-publique">
+  <div class="premium">
+    <h2>🏛️ PRÉPARATION À LA FONCTION PUBLIQUE</h2>
+    <p>Apprends à ton rythme. Pas de chronomètre, des explications après chaque réponse.</p>
+
+    <div id="fp-intro">
+      <h3>📚 Série 1 : Connaissances générales</h3>
+      <p>20 questions pour apprendre les notions fondamentales.</p>
+      <button onclick="fpStart()">COMMENCER À APPRENDRE</button>
+    </div>
+
+    <div id="fp-game" style="display:none;">
+      <p id="fp-progress"></p>
+      <h3 id="fp-question"></h3>
+      <div id="fp-answers"></div>
+      <div id="fp-explanation" style="margin-top:15px;"></div>
+      <button id="fp-next" style="display:none;" onclick="fpNext()">QUESTION SUIVANTE</button>
+    </div>
+
+    <div id="fp-result" style="display:none;">
+      <h3>🎉 Série terminée !</h3>
+      <p id="fp-score"></p>
+      <p>Prends le temps de revoir les explications et de recommencer pour progresser.</p>
+      <button onclick="fpStart()">RECOMMENCER LA SÉRIE</button>
+    </div>
+  </div>
+</section>
+
+<style>
+#formation-fonction-publique button {
+  background: linear-gradient(135deg,#245bdb,#7138c8);
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 16px;
+  margin: 6px 4px;
+  cursor: pointer;
+}
+#formation-fonction-publique .fp-answer {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #17233d;
+  color: white;
+  border: 1px solid #52617c;
+  border-radius: 8px;
+  padding: 13px;
+  margin: 8px 0;
+}
+#formation-fonction-publique .fp-answer:disabled {
+  opacity: 1;
+  cursor: default;
+}
+#formation-fonction-publique .fp-correct {
+  background: #176b3a;
+}
+#formation-fonction-publique .fp-wrong {
+  background: #8b2929;
+}
+#formation-fonction-publique #fp-explanation {
+  background: #17233d;
+  border-left: 4px solid #d4af37;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.6;
+}
+</style>
+
+<script>
+const fpQuestions = [
+  {
+    q:"Quelle est la capitale politique et administrative de la Côte d'Ivoire ?",
+    a:["Abidjan","Yamoussoukro","Bouaké"],
+    c:1,
+    e:"Yamoussoukro est la capitale politique et administrative de la Côte d'Ivoire. Abidjan demeure la principale ville économique du pays."
+  },
+  {
+    q:"Quelle est la devise de la République de Côte d'Ivoire ?",
+    a:["Liberté, Égalité, Fraternité","Union, Discipline, Travail","Paix, Justice, Progrès"],
+    c:1,
+    e:"La devise nationale est « Union, Discipline, Travail ». Elle exprime des valeurs fondamentales de la République."
+  },
+  {
+    q:"Quelle langue est la langue officielle de la Côte d'Ivoire ?",
+    a:["Le baoulé","Le français","Le dioula"],
+    c:1,
+    e:"Le français est la langue officielle. De nombreuses langues nationales sont également parlées dans le pays."
+  },
+  {
+    q:"Quel document fixe les règles fondamentales de l'organisation de l'État ?",
+    a:["La Constitution","Un règlement intérieur","Un communiqué"],
+    c:0,
+    e:"La Constitution est la norme fondamentale qui organise les institutions et fixe les principes essentiels de l'État."
+  },
+  {
+    q:"Quel est le rôle général de la Fonction publique ?",
+    a:["Servir l'intérêt général","Organiser uniquement les entreprises privées","Remplacer les collectivités"],
+    c:0,
+    e:"Les agents publics contribuent au fonctionnement des services publics et à la satisfaction de l'intérêt général."
+  },
+  {
+    q:"Comment appelle-t-on une personne qui travaille au service de l'administration publique ?",
+    a:["Un fonctionnaire ou agent public","Un électeur uniquement","Un commerçant uniquement"],
+    c:0,
+    e:"Un fonctionnaire est un agent nommé dans un emploi permanent et titularisé dans un grade, selon le statut applicable. Tous les agents publics ne sont pas nécessairement fonctionnaires."
+  },
+  {
+    q:"Quel principe signifie que les usagers doivent être traités sans discrimination injustifiée ?",
+    a:["Le principe d'égalité","Le principe de secret absolu","Le principe de faveur personnelle"],
+    c:0,
+    e:"Le principe d'égalité devant le service public implique un traitement égal des usagers placés dans des situations comparables."
+  },
+  {
+    q:"Que signifie le sigle CEI en Côte d'Ivoire ?",
+    a:["Commission électorale indépendante","Conseil économique international","Centre d'études ivoiriennes"],
+    c:0,
+    e:"La CEI signifie Commission électorale indépendante. Elle intervient dans l'organisation des élections selon les textes en vigueur."
+  },
+  {
+    q:"Quelle institution vote les lois en Côte d'Ivoire ?",
+    a:["Le Parlement","La mairie seule","La police nationale"],
+    c:0,
+    e:"Le Parlement exerce le pouvoir législatif. Il est composé de l'Assemblée nationale et du Sénat."
+  },
+  {
+    q:"Quel est le rôle principal d'une mairie ?",
+    a:["Gérer les affaires de la commune","Diriger tous les ministères","Voter la Constitution seule"],
+    c:0,
+    e:"La mairie participe à l'administration de la commune et à la gestion des services et affaires communales."
+  },
+  {
+    q:"Quel comportement est attendu d'un agent public dans l'exercice de ses fonctions ?",
+    a:["La neutralité et le respect des règles","Le favoritisme","L'utilisation du service à des fins personnelles"],
+    c:0,
+    e:"L'agent public doit respecter les obligations professionnelles, notamment la neutralité, la probité et le respect des usagers."
+  },
+  {
+    q:"Que signifie le sigle ONU ?",
+    a:["Organisation des Nations unies","Office national universitaire","Organisation numérique unifiée"],
+    c:0,
+    e:"L'ONU est une organisation internationale créée en 1945 pour favoriser notamment la paix, la sécurité et la coopération internationales."
+  },
+  {
+    q:"Combien de jours compte une année ordinaire ?",
+    a:["360","365","366"],
+    c:1,
+    e:"Une année ordinaire compte 365 jours. Une année bissextile en compte 366."
+  },
+  {
+    q:"Quel est le résultat de 25 + 37 ?",
+    a:["52","62","72"],
+    c:1,
+    e:"25 + 37 = 62. Pour calculer, additionne d'abord les dizaines puis les unités."
+  },
+  {
+    q:"Quel mot est correctement écrit ?",
+    a:["Administration","Administation","Administrassion"],
+    c:0,
+    e:"Le mot correct est « administration », avec un r après le t et sans double s."
+  },
+  {
+    q:"Quel est le contraire de « augmenter » ?",
+    a:["Diminuer","Ajouter","Élever"],
+    c:0,
+    e:"« Diminuer » signifie rendre moins important ou réduire. C'est le contraire d'augmenter."
+  },
+  {
+    q:"Quel est le rôle principal de la police nationale ?",
+    a:["Contribuer à la sécurité publique et faire respecter la loi","Voter les lois","Diriger les hôpitaux"],
+    c:0,
+    e:"La police nationale exerce des missions de sécurité et de police dans le cadre des lois et règlements."
+  },
+  {
+    q:"Quel comportement favorise un bon service aux usagers ?",
+    a:["L'écoute et la courtoisie","L'impolitesse","Le refus systématique d'aider"],
+    c:0,
+    e:"L'écoute, la courtoisie et l'orientation correcte des usagers contribuent à la qualité du service public."
+  },
+  {
+    q:"Que représente le budget de l'État ?",
+    a:["Les recettes et dépenses prévues pour une période","Uniquement le salaire du président","Uniquement les dons privés"],
+    c:0,
+    e:"Le budget de l'État présente les prévisions de recettes et les autorisations de dépenses publiques pour une période donnée."
+  },
+  {
+    q:"Pourquoi le respect du secret professionnel est-il important ?",
+    a:["Pour protéger les informations confidentielles","Pour cacher toutes les décisions publiques","Pour éviter de répondre aux usagers"],
+    c:0,
+    e:"Le secret professionnel protège les informations que les agents ne doivent pas divulguer. Il s'applique selon les obligations prévues par les textes."
+  }
+];
+
+let fpIndex = 0;
+let fpScore = 0;
+let fpAnswered = false;
+
+function fpStart() {
+  fpIndex = 0;
+  fpScore = 0;
+  fpAnswered = false;
+  document.getElementById("fp-intro").style.display = "none";
+  document.getElementById("fp-result").style.display = "none";
+  document.getElementById("fp-game").style.display = "block";
+  fpShow();
+}
+
+function fpShow() {
+  fpAnswered = false;
+  const item = fpQuestions[fpIndex];
+
+  document.getElementById("fp-progress").textContent =
+    "Question " + (fpIndex + 1) + " / " + fpQuestions.length;
+
+  document.getElementById("fp-question").textContent = item.q;
+  document.getElementById("fp-explanation").textContent = "";
+  document.getElementById("fp-next").style.display = "none";
+
+  const area = document.getElementById("fp-answers");
+  area.innerHTML = "";
+
+  item.a.forEach((answer, i) => {
+    const button = document.createElement("button");
+    button.className = "fp-answer";
+    button.textContent = answer;
+    button.onclick = () => fpAnswer(i);
+    area.appendChild(button);
+  });
+}
+
+function fpAnswer(choice) {
+  if (fpAnswered) return;
+  fpAnswered = true;
+
+  const item = fpQuestions[fpIndex];
+  const buttons = document.querySelectorAll("#fp-answers button");
+
+  buttons.forEach((button, i) => {
+    button.disabled = true;
+    if (i === item.c) button.classList.add("fp-correct");
+    else if (i === choice) button.classList.add("fp-wrong");
+  });
+
+  if (choice === item.c) {
+    fpScore++;
+    document.getElementById("fp-explanation").textContent =
+      "✅ Bonne réponse ! " + item.e;
+  } else {
+    document.getElementById("fp-explanation").textContent =
+      "❌ La bonne réponse est : " + item.a[item.c] + ". " + item.e;
+  }
+
+  document.getElementById("fp-next").style.display = "inline-block";
+  document.getElementById("fp-next").textContent =
+    fpIndex === fpQuestions.length - 1 ? "VOIR MON RÉSULTAT" : "CONTINUER";
+}
+
+function fpNext() {
+  if (!fpAnswered) return;
+
+  fpIndex++;
+
+  if (fpIndex < fpQuestions.length) {
+    fpShow();
+  } else {
+    document.getElementById("fp-game").style.display = "none";
+    document.getElementById("fp-result").style.display = "block";
+    document.getElementById("fp-score").textContent =
+      "Tu as obtenu " + fpScore + " bonne(s) réponse(s) sur 20. Revois les explications et recommence pour progresser.";
+  }
+}
+      </script>
 </body>
 </html> 
