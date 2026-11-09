@@ -3102,5 +3102,317 @@ function beSuivant() {
   }
 }
 </script>
+
+<style>
+#bati-concours {
+  background: #171725;
+  color: #fff;
+  max-width: 850px;
+  margin: 25px auto;
+  padding: 24px 16px;
+  border-radius: 18px;
+  border: 1px solid #d4af37;
+  font-family: Arial, sans-serif;
+}
+#bati-concours h2 {
+  color: #e4bd54;
+  text-align: center;
+}
+#bati-concours .bc-intro {
+  text-align: center;
+  line-height: 1.6;
+  color: #ddd;
+}
+#bati-concours button {
+  background: linear-gradient(135deg,#d4af37,#98701b);
+  color: #171717;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 17px;
+  margin: 6px 3px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#bati-concours .bc-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #29293e;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 9px;
+  padding: 13px;
+  margin: 9px 0;
+}
+#bati-concours .bc-option:disabled {
+  opacity: 1;
+}
+#bati-concours .bc-correct {
+  background: #175b38;
+  border-color: #43c77c;
+}
+#bati-concours .bc-wrong {
+  background: #682b30;
+  border-color: #e46a6a;
+}
+#bati-concours #bc-explication {
+  background: #29293e;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 15px;
+  line-height: 1.6;
+}
+#bati-concours #bc-progression {
+  color: #e4bd54;
+  font-weight: bold;
+}
+</style>
+
+<section id="bati-concours">
+  <h2>🏆 CONCOURS PROFESSIONNELS</h2>
+
+  <p class="bc-intro">
+    Entraîne-toi aux épreuves de sélection des concours professionnels.
+    Développe tes connaissances et apprends à ton rythme.
+    Aucun chronomètre !
+  </p>
+
+  <div id="bc-accueil" style="text-align:center;">
+    <p>📚 20 questions pour commencer</p>
+    <p>Français • Logique • Culture générale • Administration • Métiers</p>
+    <button onclick="bcDemarrer()">COMMENCER L'EXAMEN BLANC</button>
+  </div>
+
+  <div id="bc-jeu" style="display:none;">
+    <p id="bc-progression"></p>
+    <h3 id="bc-question"></h3>
+    <div id="bc-options"></div>
+    <div id="bc-explication" style="display:none;"></div>
+    <button id="bc-suivant" onclick="bcSuivant()" style="display:none;">
+      QUESTION SUIVANTE
+    </button>
+  </div>
+
+  <div id="bc-resultat" style="display:none;text-align:center;">
+    <h3>🎉 EXAMEN BLANC TERMINÉ</h3>
+    <p id="bc-score"></p>
+    <button onclick="bcDemarrer()">RECOMMENCER</button>
+  </div>
+</section>
+
+<script>
+const bcBanque = [
+{
+q:"Quel est le rôle principal d'un agent du service public ?",
+o:["Servir l'intérêt général","Favoriser uniquement ses proches","Refuser les demandes des citoyens"],
+c:0,
+e:"Un agent public participe à la satisfaction de l'intérêt général dans le respect des règles de son service."
+},
+{
+q:"Que signifie le mot intégrité dans le cadre professionnel ?",
+o:["Agir avec honnêteté","Accepter les cadeaux illicites","Modifier les documents"],
+c:0,
+e:"L'intégrité consiste à agir honnêtement et conformément aux principes éthiques."
+},
+{
+q:"Quel est le synonyme de compétence ?",
+o:["Aptitude","Faiblesse","Retard"],
+c:0,
+e:"Une compétence est une capacité à mobiliser des connaissances et des savoir-faire pour accomplir une tâche."
+},
+{
+q:"Choisis la phrase correctement écrite.",
+o:["Les candidats sont convoqués.","Les candidats est convoqués.","Les candidats sont convoqué."],
+c:0,
+e:"Le sujet candidats est au pluriel : le verbe et le participe passé employé avec être s'accordent au pluriel."
+},
+{
+q:"Un produit coûte 10 000 FCFA. Son prix augmente de 10 %. Quel est son nouveau prix ?",
+o:["10 100 FCFA","11 000 FCFA","12 000 FCFA"],
+c:1,
+e:"10 % de 10 000 = 1 000. Le nouveau prix est donc 11 000 FCFA."
+},
+{
+q:"Complète la suite : 3, 6, 12, 24, ...",
+o:["30","36","48"],
+c:2,
+e:"Chaque nombre est multiplié par 2. Après 24 vient donc 48."
+},
+{
+q:"Un candidat répond correctement à 15 questions sur 20. Quel est son pourcentage de réussite ?",
+o:["65 %","75 %","80 %"],
+c:1,
+e:"15 ÷ 20 × 100 = 75 %."
+},
+{
+q:"Quel document présente généralement les expériences et qualifications d'un candidat ?",
+o:["Le CV","La facture","Le reçu"],
+c:0,
+e:"Le curriculum vitæ présente notamment le parcours, les expériences, les formations et les compétences."
+},
+{
+q:"Que doit faire un candidat s'il ne comprend pas une consigne ?",
+o:["Demander une clarification si cela est autorisé","Répondre au hasard immédiatement","Quitter la salle"],
+c:0,
+e:"Il doit demander une clarification lorsque le règlement de l'épreuve le permet."
+},
+{
+q:"Quel comportement est attendu pendant un entretien professionnel ?",
+o:["Écouter et répondre clairement","Interrompre constamment le jury","Inventer des expériences"],
+c:0,
+e:"Une communication claire, honnête et respectueuse est importante lors d'un entretien."
+},
+{
+q:"Que signifie la confidentialité professionnelle ?",
+o:["Protéger les informations auxquelles on a accès","Publier tous les dossiers","Partager les mots de passe"],
+c:0,
+e:"La confidentialité impose de protéger les informations sensibles conformément aux règles applicables."
+},
+{
+q:"Quel est le rôle d'un procès-verbal ?",
+o:["Consigner officiellement les faits ou décisions d'une réunion","Remplacer une carte d'identité","Faire une publicité"],
+c:0,
+e:"Un procès-verbal est un document qui rapporte les faits, échanges ou décisions d'une séance."
+},
+{
+q:"Quelle attitude adopter face à un usager mécontent ?",
+o:["Rester calme et écouter","Répondre par des insultes","Refuser systématiquement de l'écouter"],
+c:0,
+e:"L'écoute et le calme facilitent la compréhension du problème et la recherche d'une solution adaptée."
+},
+{
+q:"Dans une équipe professionnelle, la collaboration signifie :",
+o:["Travailler ensemble vers un objectif commun","Refuser toute aide","Cacher les informations utiles"],
+c:0,
+e:"La collaboration repose sur la communication, le partage des tâches et la poursuite d'un objectif commun."
+},
+{
+q:"Quel équipement protège généralement les yeux contre certains risques professionnels ?",
+o:["Les lunettes de protection","Les sandales","Un cahier"],
+c:0,
+e:"Les lunettes de protection sont utilisées lorsque l'évaluation des risques indique un danger pour les yeux."
+},
+{
+q:"Dans un établissement de santé, pourquoi l'hygiène des mains est-elle importante ?",
+o:["Pour réduire la transmission des microbes","Pour remplacer tous les soins","Pour éviter de porter une blouse"],
+c:0,
+e:"L'hygiène des mains contribue à prévenir la transmission des agents infectieux."
+},
+{
+q:"Que doit faire un agent qui constate une situation dangereuse au travail ?",
+o:["Suivre la procédure de sécurité et signaler le danger","Ignorer le problème","Cacher l'incident"],
+c:0,
+e:"Il faut appliquer les consignes de sécurité et informer les responsables concernés."
+},
+{
+q:"Quel outil permet principalement de créer un tableau de calcul ?",
+o:["Un tableur","Un lecteur audio","Un navigateur seul"],
+c:0,
+e:"Un tableur comme Excel ou LibreOffice Calc permet d'organiser des données et d'effectuer des calculs."
+},
+{
+q:"Quelle institution organise les élections en Côte d'Ivoire ?",
+o:["La Commission électorale indépendante (CEI)","La FIFA","L'UNESCO"],
+c:0,
+e:"La CEI est l'institution chargée de l'organisation des élections en Côte d'Ivoire, dans le cadre des textes applicables."
+},
+{
+q:"Un candidat doit présenter une pièce d'identité avant une épreuve. Que doit-il faire ?",
+o:["Vérifier les consignes et apporter la pièce demandée","Présenter le document d'un autre candidat","Ignorer la consigne"],
+c:0,
+e:"Il faut lire la convocation et respecter les documents exigés par l'organisateur du concours."
+}
+];
+
+let bcQuestions = [];
+let bcIndex = 0;
+let bcPoints = 0;
+let bcRepondu = false;
+
+function bcMelanger(tableau) {
+  const copie = [...tableau];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
+}
+
+function bcDemarrer() {
+  bcQuestions = bcMelanger(bcBanque);
+  bcIndex = 0;
+  bcPoints = 0;
+  document.getElementById("bc-accueil").style.display = "none";
+  document.getElementById("bc-resultat").style.display = "none";
+  document.getElementById("bc-jeu").style.display = "block";
+  bcAfficher();
+}
+
+function bcAfficher() {
+  bcRepondu = false;
+  const question = bcQuestions[bcIndex];
+
+  document.getElementById("bc-progression").textContent =
+    "Question " + (bcIndex + 1) + " / " + bcQuestions.length;
+
+  document.getElementById("bc-question").textContent = question.q;
+
+  const zone = document.getElementById("bc-options");
+  zone.innerHTML = "";
+
+  question.o.forEach((option, index) => {
+    const bouton = document.createElement("button");
+    bouton.className = "bc-option";
+    bouton.textContent = String.fromCharCode(65 + index) + ". " + option;
+    bouton.onclick = () => bcRepondre(index);
+    zone.appendChild(bouton);
+  });
+
+  document.getElementById("bc-explication").style.display = "none";
+  document.getElementById("bc-suivant").style.display = "none";
+}
+
+function bcRepondre(choix) {
+  if (bcRepondu) return;
+  bcRepondu = true;
+
+  const question = bcQuestions[bcIndex];
+  const boutons = document.querySelectorAll("#bc-options .bc-option");
+
+  boutons.forEach((bouton, index) => {
+    bouton.disabled = true;
+    if (index === question.c) bouton.classList.add("bc-correct");
+    if (index === choix && choix !== question.c) {
+      bouton.classList.add("bc-wrong");
+    }
+  });
+
+  const juste = choix === question.c;
+  if (juste) bcPoints++;
+
+  const explication = document.getElementById("bc-explication");
+  explication.style.display = "block";
+  explication.innerHTML =
+    (juste ? "✅ Bonne réponse !" : "❌ Réponse incorrecte.") +
+    "<br><strong>Correction :</strong> " + question.e;
+
+  document.getElementById("bc-suivant").style.display = "inline-block";
+  document.getElementById("bc-suivant").textContent =
+    bcIndex === bcQuestions.length - 1 ? "VOIR MON RÉSULTAT" : "QUESTION SUIVANTE";
+}
+
+function bcSuivant() {
+  if (bcIndex < bcQuestions.length - 1) {
+    bcIndex++;
+    bcAfficher();
+  } else {
+    document.getElementById("bc-jeu").style.display = "none";
+    document.getElementById("bc-resultat").style.display = "block";
+    document.getElementById("bc-score").textContent =
+      "Ton résultat : " + bcPoints + " / " + bcQuestions.length +
+      ". Continue ton entraînement !";
+  }
+}
+</script>
 </body>
 </html> 
