@@ -266,114 +266,250 @@ button:focus,a:focus,input:focus{outline:2px solid #a987ff}
 </footer>
 
 <script>
-const quizQuestions = [
-  {q:"Quelle est la capitale de la Côte d'Ivoire ?",a:["Abidjan","Yamoussoukro","Bouaké"],c:1},
-  {q:"Combien font 7 × 8 ?",a:["54","56","64"],c:1},
-  {q:"Quel animal est appelé le roi de la savane ?",a:["Lion","Éléphant","Girafe"],c:0},
-  {q:"Combien de jours y a-t-il dans une semaine ?",a:["5","6","7"],c:2},
-  {q:"Quelle planète est surnommée la planète rouge ?",a:["Vénus","Mars","Jupiter"],c:1}
-];
 
-const riddles = [
-  {q:"Je monte et je descends, mais je ne bouge jamais. Qui suis-je ?",a:["Un escalier","Un oiseau","Une voiture"],c:0},
-  {q:"Plus je sèche, plus je deviens mouillé. Qui suis-je ?",a:["Le soleil","Une serviette","Le vent"],c:1},
-  {q:"J'ai des dents mais je ne mange pas. Qui suis-je ?",a:["Un peigne","Un chat","Un poisson"],c:0}
-];
-
-const challenges = [
-  {q:"Combien de côtés possède un triangle ?",a:["2","3","4"],c:1},
-  {q:"Quel est le contraire de rapide ?",a:["Lent","Grand","Fort"],c:0},
-  {q:"Combien font 100 divisé par 10 ?",a:["5","10","20"],c:1},
-  {q:"Quel mois vient après avril ?",a:["Mars","Juin","Mai"],c:2}
-];
+const questionsParNiveau = 5;
 
 let currentQuestions = [];
 let currentIndex = 0;
 let score = 0;
+let level = 1;
 let answered = false;
+let currentGame = "";
+let lastRiddle = -1;
 
-function startGame(title,questions){
-  currentQuestions = questions;
-  currentIndex = 0;
-  score = 0;
-  answered = false;
-  document.getElementById("gameTitle").textContent = title;
+const quizFacts = [
+  {q:"Quelle est la capitale de la Côte d'Ivoire ?",a:"Yamoussoukro",d:["Abidjan","Bouaké"]},
+  {q:"Quelle planète est surnommée la planète rouge ?",a:"Mars",d:["Vénus","Jupiter"]},
+  {q:"Combien de jours y a-t-il dans une semaine ?",a:"7",d:["5","6"]},
+  {q:"Quel animal est appelé le roi de la savane ?",a:"Le lion",d:["L'éléphant","La girafe"]},
+  {q:"Quel est le plus grand océan du monde ?",a:"L'océan Pacifique",d:["L'océan Indien","L'océan Atlantique"]},
+  {q:"Quelle est la langue officielle du Brésil ?",a:"Le portugais",d:["L'espagnol","Le français"]},
+  {q:"Combien de côtés possède un hexagone ?",a:"6",d:["5","8"]},
+  {q:"Quel est le satellite naturel de la Terre ?",a:"La Lune",d:["Mars","Le Soleil"]}
+];
+
+const riddles = [
+  {q:"Je monte et je descends, mais je ne bouge jamais. Qui suis-je ?",a:"Un escalier",d:["Un oiseau","Une voiture"]},
+  {q:"Plus je sèche, plus je deviens mouillé. Qui suis-je ?",a:"Une serviette",d:["Le soleil","Le vent"]},
+  {q:"J'ai des dents mais je ne mange pas. Qui suis-je ?",a:"Un peigne",d:["Un chat","Un poisson"]},
+  {q:"Je peux être cassé sans être touché. Qui suis-je ?",a:"Une promesse",d:["Un verre","Un mur"]},
+  {q:"Je possède des aiguilles mais je ne pique pas. Qui suis-je ?",a:"Une horloge",d:["Un cactus","Un hérisson"]},
+  {q:"Plus on m'enlève, plus je deviens grand. Qui suis-je ?",a:"Un trou",d:["Une maison","Un arbre"]},
+  {q:"Je parle sans bouche et j'entends sans oreilles. Qui suis-je ?",a:"Un écho",d:["Un téléphone","Une radio"]},
+  {q:"Je suis toujours devant toi, mais tu ne peux jamais me voir. Qui suis-je ?",a:"L'avenir",d:["Ton ombre","Le passé"]},
+  {q:"Qu'est-ce qui a un cou mais pas de tête ?",a:"Une bouteille",d:["Une chemise","Une chaise"]},
+  {q:"Qu'est-ce qui court sans avoir de jambes ?",a:"L'eau",d:["Un chien","Un enfant"]},
+  {q:"Je grandis quand on me nourrit et je meurs quand on me donne à boire. Qui suis-je ?",a:"Le feu",d:["Une plante","Un poisson"]},
+  {q:"Qu'est-ce qui a des feuilles mais pas de branches ?",a:"Un livre",d:["Un arbre","Une fleur"]}
+];
+
+function randomInt(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+function makeQuestion(q,correct,distractors){
+  const choices = [String(correct),...distractors.map(String)];
+  for(let i=choices.length-1;i>0;i--){
+    const j=randomInt(0,i);
+    [choices[i],choices[j]]=[choices[j],choices[i]];
+  }
+  return {q,a:choices,c:choices.indexOf(String(correct))};
+}
+
+function generateMathQuestion(level,challenge=false){
+  const max=Math.min(10+level*5,1000);
+  const operations=["+","-","×"];
+  const op=operations[randomInt(0,level<3?1:2)];
+  let a=randomInt(1,max);
+  let b=randomInt(1,max);
+  let result;
+
+  if(op==="-"){
+    if(b>a)[a,b]=[b,a];
+    result=a-b;
+  }else if(op==="×"){
+    a=randomInt(2,Math.min(12,2+level));
+    b=randomInt(2,Math.min(12,2+level));
+    result=a*b;
+  }else{
+    result=a+b;
+  }
+
+  const label=challenge?"Défi":"Calcul";
+  const wrong1=result+randomInt(1,5);
+  const wrong2=Math.max(0,result-randomInt(1,5));
+
+  return makeQuestion(
+    `${label} : combien font ${a} ${op} ${b} ?`,
+    result,
+    [wrong1,wrong2]
+  );
+}
+
+function generateQuizQuestion(level){
+  if(Math.random()<0.5){
+    return generateMathQuestion(level);
+  }
+  const fact=quizFacts[randomInt(0,quizFacts.length-1)];
+  return makeQuestion(fact.q,fact.a,fact.d);
+}
+
+function generateRiddleQuestion(){
+  let index=randomInt(0,riddles.length-1);
+  if(riddles.length>1 && index===lastRiddle){
+    index=(index+1)%riddles.length;
+  }
+  lastRiddle=index;
+  const r=riddles[index];
+  return makeQuestion(r.q,r.a,r.d);
+}
+
+function generateChallengeQuestion(level){
+  if(Math.random()<0.65){
+    return generateMathQuestion(level,true);
+  }
+
+  const start=randomInt(1,Math.min(20+level*5,500));
+  const step=randomInt(2,Math.min(5+level,30));
+  const answer=start+step;
+
+  return makeQuestion(
+    `Trouve le nombre suivant : ${start}, ${start+step}, ${start+2*step}, ${start+3*step}, ?`,
+    answer,
+    [answer+step,answer-1]
+  );
+}
+
+function generateLevelQuestions(){
+  const questions=[];
+
+  for(let i=0;i<questionsParNiveau;i++){
+    if(currentGame==="quiz"){
+      questions.push(generateQuizQuestion(level));
+    }else if(currentGame==="riddle"){
+      questions.push(generateRiddleQuestion());
+    }else{
+      questions.push(generateChallengeQuestion(level));
+    }
+  }
+
+  return questions;
+}
+
+function startGame(title,gameType){
+  currentGame=gameType;
+  currentIndex=0;
+  score=0;
+  level=1;
+  answered=false;
+
+  document.getElementById("gameTitle").textContent=title;
   document.getElementById("gameBox").classList.add("active");
-  document.getElementById("feedback").textContent = "";
-  document.getElementById("nextButton").style.display = "none";
+  document.getElementById("feedback").textContent="";
+  document.getElementById("nextButton").style.display="none";
+
+  currentQuestions=generateLevelQuestions();
   showQuestion();
+
   document.getElementById("gameBox").scrollIntoView({behavior:"smooth"});
 }
 
-function startQuiz(){startGame("🧠 QUIZ",quizQuestions);}
-function startRiddle(){startGame("🤔 ÉNIGMES",riddles);}
-function startChallenge(){startGame("⚡ DÉFIS",challenges);}
+function startQuiz(){
+  startGame("🧠 QUIZ","quiz");
+}
+
+function startRiddle(){
+  startGame("🤔 ÉNIGMES","riddle");
+}
+
+function startChallenge(){
+  startGame("⚡ DÉFIS","challenge");
+}
 
 function showQuestion(){
-  answered = false;
-  const item = currentQuestions[currentIndex];
-  document.getElementById("gameContent").innerHTML =
-    '<p class="question">'+(currentIndex+1)+'. '+item.q+'</p>'+
+  answered=false;
+  const item=currentQuestions[currentIndex];
+
+  document.getElementById("gameContent").innerHTML=
+    `<p><strong>🏆 NIVEAU ${level}</strong> — Question ${currentIndex+1}/${questionsParNiveau}</p>`+
+    `<p class="question">${item.q}</p>`+
     '<div class="answers">'+
     item.a.map((answer,i)=>
-      '<button class="answer" onclick="checkAnswer('+i+')" id="answer'+i+'">'+answer+'</button>'
-    ).join("")+'</div>';
-  document.getElementById("scoreDisplay").textContent = "Score : "+score;
-  document.getElementById("feedback").textContent = "";
-  document.getElementById("nextButton").style.display = "none";
+      `<button class="answer" onclick="checkAnswer(${i})">${answer}</button>`
+    ).join("")+
+    '</div>';
+
+  document.getElementById("scoreDisplay").textContent=
+    `Score : ${score} points | Niveau : ${level}`;
+
+  document.getElementById("feedback").textContent="";
+  document.getElementById("nextButton").style.display="none";
 }
 
 function checkAnswer(choice){
   if(answered)return;
-  answered = true;
-  const item = currentQuestions[currentIndex];
-  const buttons = document.querySelectorAll(".answer");
+  answered=true;
+
+  const item=currentQuestions[currentIndex];
+  const buttons=document.querySelectorAll(".answer");
+
   buttons.forEach((button,i)=>{
-    button.disabled = true;
+    button.disabled=true;
     if(i===item.c)button.classList.add("correct");
     if(i===choice && choice!==item.c)button.classList.add("wrong");
   });
+
   if(choice===item.c){
-    score += 10;
-    document.getElementById("feedback").textContent = "🎉 Bravo ! Bonne réponse.";
+    score+=10;
+    document.getElementById("feedback").textContent=
+      "🎉 Bravo ! Bonne réponse. +10 points";
   }else{
-    document.getElementById("feedback").textContent = "❌ Mauvaise réponse. La bonne réponse est : "+item.a[item.c];
+    document.getElementById("feedback").textContent=
+      "❌ Mauvaise réponse. La bonne réponse est : "+item.a[item.c];
   }
-  document.getElementById("scoreDisplay").textContent = "Score : "+score;
-  document.getElementById("nextButton").style.display = "inline-block";
-  document.getElementById("nextButton").textContent =
-    currentIndex===currentQuestions.length-1 ? "VOIR MON RÉSULTAT" : "QUESTION SUIVANTE";
+
+  document.getElementById("scoreDisplay").textContent=
+    `Score : ${score} points | Niveau : ${level}`;
+
+  const nextButton=document.getElementById("nextButton");
+  nextButton.style.display="inline-block";
+
+  nextButton.textContent=
+    currentIndex===questionsParNiveau-1
+      ?"PASSER AU NIVEAU SUIVANT 🚀"
+      :"QUESTION SUIVANTE";
 }
 
 function nextQuestion(){
-  if(currentIndex < currentQuestions.length-1){
+  if(!answered)return;
+
+  if(currentIndex<questionsParNiveau-1){
     currentIndex++;
     showQuestion();
   }else{
-    finishGame();
+    nextLevel();
   }
 }
 
-function finishGame(){
-  const oldBest = Number(localStorage.getItem("batiGamesBest") || 0);
-  const newBest = Math.max(oldBest,score);
-  localStorage.setItem("batiGamesBest",newBest);
-  document.getElementById("gameContent").innerHTML =
-    "<h2>🏆 Partie terminée !</h2>"+
-    "<p>Ton score : <strong>"+score+" points</strong></p>"+
-    "<p>Ton meilleur score : <strong>"+newBest+" points</strong></p>"+
-    '<button class="btn" onclick="startQuiz()">REJOUER AU QUIZ</button>';
-  document.getElementById("scoreDisplay").textContent = "";
-  document.getElementById("feedback").textContent = "Merci d'avoir joué sur BATI GAMES !";
-  document.getElementById("nextButton").style.display = "none";
+function nextLevel(){
+  level++;
+  currentIndex=0;
+  currentQuestions=generateLevelQuestions();
+
+  document.getElementById("feedback").textContent=
+    `🔥 Félicitations ! Tu passes au niveau ${level} !`;
+
+  showQuestion();
 }
 
 function closeGame(){
   document.getElementById("gameBox").classList.remove("active");
-  document.getElementById("gameContent").innerHTML = "";
-  document.getElementById("feedback").textContent = "";
-  document.getElementById("scoreDisplay").textContent = "";
-}
+  document.getElementById("gameContent").innerHTML="";
+  document.getElementById("feedback").textContent="";
+  document.getElementById("scoreDisplay").textContent="";
+  document.getElementById("nextButton").style.display="none";
+  currentGame="";
+  }
 </script>
 </body>
 </html> 
