@@ -1633,5 +1633,314 @@ function infoNext() {
     <button onclick="batiMondeDemarrer()">CONTINUER À APPRENDRE</button>
   </div>
 </section>
-</body>
+
+<script>
+const batiMondeBanque = [
+  {
+    theme: "Géographie",
+    q: "Quel est le plus grand océan du monde ?",
+    o: ["Atlantique", "Indien", "Pacifique", "Arctique"],
+    a: 2,
+    e: "L'océan Pacifique est le plus vaste océan de la planète."
+  },
+  {
+    theme: "Géographie",
+    q: "Quelle est la capitale du Japon ?",
+    o: ["Pékin", "Tokyo", "Séoul", "Bangkok"],
+    a: 1,
+    e: "Tokyo est la capitale du Japon."
+  },
+  {
+    theme: "Géographie",
+    q: "Dans quel continent se trouve le désert du Sahara ?",
+    o: ["Asie", "Afrique", "Europe", "Amérique"],
+    a: 1,
+    e: "Le Sahara se trouve en Afrique du Nord."
+  },
+  {
+    theme: "Histoire",
+    q: "En quelle année l'Organisation des Nations unies a-t-elle été créée ?",
+    o: ["1918", "1939", "1945", "1960"],
+    a: 2,
+    e: "L'ONU a été fondée en 1945, après la Seconde Guerre mondiale."
+  },
+  {
+    theme: "Sciences",
+    q: "Quelle planète est la plus proche du Soleil ?",
+    o: ["Vénus", "Mars", "Mercure", "Jupiter"],
+    a: 2,
+    e: "Mercure est la planète la plus proche du Soleil."
+  },
+  {
+    theme: "Littérature",
+    q: "Qui a écrit Roméo et Juliette ?",
+    o: ["Victor Hugo", "William Shakespeare", "Molière", "Voltaire"],
+    a: 1,
+    e: "William Shakespeare est l'auteur de la tragédie Roméo et Juliette."
+  },
+  {
+    theme: "Géographie",
+    q: "Dans quel pays se trouve la Grande Muraille ?",
+    o: ["Japon", "Chine", "Inde", "Thaïlande"],
+    a: 1,
+    e: "La Grande Muraille est un ensemble de fortifications historiques situé en Chine."
+  },
+  {
+    theme: "Sciences",
+    q: "Quel gaz les plantes absorbent-elles pour la photosynthèse ?",
+    o: ["Oxygène", "Azote", "Dioxyde de carbone", "Hydrogène"],
+    a: 2,
+    e: "Les plantes absorbent le dioxyde de carbone pour réaliser la photosynthèse."
+  },
+  {
+    theme: "Institutions",
+    q: "Dans quelle ville se trouve le siège de l'Organisation mondiale de la santé ?",
+    o: ["Paris", "Genève", "New York", "Rome"],
+    a: 1,
+    e: "Le siège de l'OMS se trouve à Genève, en Suisse."
+  },
+  {
+    theme: "Sciences",
+    q: "Quel est le symbole chimique de l'or ?",
+    o: ["Ag", "Au", "Fe", "O"],
+    a: 1,
+    e: "Au est le symbole chimique de l'or. Il vient du latin aurum."
+  },
+  {
+    theme: "Géographie",
+    q: "Quelle est la capitale du Brésil ?",
+    o: ["Rio de Janeiro", "São Paulo", "Brasília", "Salvador"],
+    a: 2,
+    e: "Brasília est la capitale du Brésil depuis 1960."
+  },
+  {
+    theme: "Sciences",
+    q: "Quel instrument sert à mesurer la température ?",
+    o: ["Baromètre", "Thermomètre", "Boussole", "Microscope"],
+    a: 1,
+    e: "Le thermomètre sert à mesurer la température."
+  },
+  {
+    theme: "Histoire",
+    q: "En quelle année le premier homme a-t-il marché sur la Lune ?",
+    o: ["1959", "1965", "1969", "1975"],
+    a: 2,
+    e: "Neil Armstrong a marché sur la Lune en juillet 1969, pendant la mission Apollo 11."
+  },
+  {
+    theme: "Géographie",
+    q: "Quel est le plus grand pays du monde par sa superficie ?",
+    o: ["Canada", "Chine", "États-Unis", "Russie"],
+    a: 3,
+    e: "La Russie est le plus grand pays du monde par sa superficie."
+  },
+  {
+    theme: "Sciences",
+    q: "Quel organe pompe le sang dans le corps humain ?",
+    o: ["Le cerveau", "Le foie", "Le cœur", "Le poumon"],
+    a: 2,
+    e: "Le cœur propulse le sang dans les vaisseaux sanguins."
+  },
+  {
+    theme: "Géographie",
+    q: "Quelle est la capitale du Canada ?",
+    o: ["Toronto", "Vancouver", "Ottawa", "Montréal"],
+    a: 2,
+    e: "Ottawa est la capitale du Canada."
+  },
+  {
+    theme: "Sciences",
+    q: "Combien de côtés possède un hexagone ?",
+    o: ["5", "6", "7", "8"],
+    a: 1,
+    e: "Un hexagone est un polygone qui possède six côtés."
+  },
+  {
+    theme: "Histoire",
+    q: "Quelle civilisation a construit le Machu Picchu ?",
+    o: ["Les Romains", "Les Incas", "Les Égyptiens", "Les Vikings"],
+    a: 1,
+    e: "Le Machu Picchu est un site historique construit par la civilisation inca, dans l'actuel Pérou."
+  },
+  {
+    theme: "Géographie",
+    q: "Quel fleuve traverse l'Égypte ?",
+    o: ["Le Congo", "Le Nil", "Le Niger", "Le Zambèze"],
+    a: 1,
+    e: "Le Nil traverse l'Égypte et a joué un rôle majeur dans son histoire."
+  },
+  {
+    theme: "Institutions",
+    q: "Quel est le principal objectif de l'UNESCO ?",
+    o: [
+      "Gérer les banques",
+      "Promouvoir l'éducation, la science et la culture",
+      "Organiser les élections",
+      "Diriger les armées"
+    ],
+    a: 1,
+    e: "L'UNESCO est une organisation des Nations unies qui œuvre notamment dans l'éducation, la science et la culture."
+  },
+  {
+    theme: "Sports",
+    q: "Combien de joueurs une équipe de football aligne-t-elle normalement sur le terrain au début d'un match ?",
+    o: ["9", "10", "11", "12"],
+    a: 2,
+    e: "Une équipe de football commence normalement un match avec onze joueurs sur le terrain."
+  },
+  {
+    theme: "Sciences",
+    q: "Quelle est la formule chimique de l'eau ?",
+    o: ["CO2", "H2O", "O2", "NaCl"],
+    a: 1,
+    e: "Une molécule d'eau contient deux atomes d'hydrogène et un atome d'oxygène : H2O."
+  },
+  {
+    theme: "Géographie",
+    q: "Quelle est la capitale de l'Australie ?",
+    o: ["Sydney", "Melbourne", "Canberra", "Perth"],
+    a: 2,
+    e: "Canberra est la capitale de l'Australie."
+  },
+  {
+    theme: "Histoire",
+    q: "Quelle ville antique est célèbre pour le Colisée ?",
+    o: ["Athènes", "Rome", "Alexandrie", "Carthage"],
+    a: 1,
+    e: "Le Colisée est un célèbre amphithéâtre antique situé à Rome, en Italie."
+  },
+  {
+    theme: "Technologie",
+    q: "Que signifie le sigle GPS ?",
+    o: [
+      "Global Positioning System",
+      "General Program Service",
+      "Global Public Signal",
+      "Geographic Private Software"
+    ],
+    a: 0,
+    e: "GPS signifie Global Positioning System, un système permettant de déterminer une position géographique."
+  }
+];
+
+let batiMondeSerie = [];
+let batiMondeIndex = 0;
+let batiMondeScore = 0;
+let batiMondeTotal = 0;
+let batiMondeDerniereQuestion = "";
+
+function batiMondeMelanger(tableau) {
+  const copie = [...tableau];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
+}
+
+function batiMondeDemarrer() {
+  document.getElementById("bati-monde-fin").classList.add("monde-cache");
+  document.getElementById("bati-monde-jeu").classList.remove("monde-cache");
+
+  batiMondeIndex = 0;
+  batiMondeScore = 0;
+  batiMondeSerie = batiMondeMelanger(batiMondeBanque);
+
+  batiMondeAfficher();
+}
+
+function batiMondeAfficher() {
+  if (batiMondeIndex >= batiMondeSerie.length) {
+    batiMondeTerminerSerie();
+    return;
+  }
+
+  const question = batiMondeSerie[batiMondeIndex];
+
+  document.getElementById("bati-monde-progression").textContent =
+    "Question " + (batiMondeIndex + 1) +
+    " sur " + batiMondeSerie.length +
+    " • Bonnes réponses : " + batiMondeScore;
+
+  document.getElementById("bati-monde-theme").textContent =
+    "📚 " + question.theme;
+
+  document.getElementById("bati-monde-question").textContent =
+    question.q;
+
+  const zone = document.getElementById("bati-monde-options");
+  zone.innerHTML = "";
+
+  question.o.forEach((option, index) => {
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = "monde-option";
+    bouton.textContent = String.fromCharCode(65 + index) + ". " + option;
+    bouton.onclick = () => batiMondeRepondre(index);
+    zone.appendChild(bouton);
+  });
+
+  document.getElementById("bati-monde-explication").classList.add("monde-cache");
+  document.getElementById("bati-monde-suivant").classList.add("monde-cache");
+}
+
+function batiMondeRepondre(choix) {
+  const question = batiMondeSerie[batiMondeIndex];
+  const boutons = document.querySelectorAll("#bati-monde-options .monde-option");
+
+  if (boutons[0].disabled) return;
+
+  boutons.forEach((bouton, index) => {
+    bouton.disabled = true;
+
+    if (index === question.a) {
+      bouton.classList.add("correct");
+    } else if (index === choix) {
+      bouton.classList.add("incorrect");
+    }
+  });
+
+  if (choix === question.a) {
+    batiMondeScore++;
+    batiMondeTotal++;
+  } else {
+    batiMondeTotal++;
+  }
+
+  const explication = document.getElementById("bati-monde-explication");
+  explication.textContent =
+    (choix === question.a ? "✅ Bonne réponse ! " : "❌ Ce n'est pas la bonne réponse. ") +
+    question.e;
+  explication.classList.remove("monde-cache");
+
+  document.getElementById("bati-monde-progression").textContent =
+    "Question " + (batiMondeIndex + 1) +
+    " sur " + batiMondeSerie.length +
+    " • Bonnes réponses : " + batiMondeScore;
+
+  document.getElementById("bati-monde-suivant").classList.remove("monde-cache");
+}
+
+function batiMondeSuivant() {
+  batiMondeIndex++;
+
+  if (batiMondeIndex >= batiMondeSerie.length) {
+    batiMondeTerminerSerie();
+  } else {
+    batiMondeAfficher();
+  }
+}
+
+function batiMondeTerminerSerie() {
+  document.getElementById("bati-monde-jeu").classList.add("monde-cache");
+  document.getElementById("bati-monde-fin").classList.remove("monde-cache");
+
+  document.getElementById("bati-monde-bilan").textContent =
+    "Tu as obtenu " + batiMondeScore + " bonne(s) réponse(s) sur " +
+    batiMondeSerie.length + ". Ton score total est de " +
+    batiMondeTotal + " question(s) répondue(s).";
+}
+
+  </script>
+  </body>
 </html> 
